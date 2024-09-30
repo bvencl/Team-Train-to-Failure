@@ -6,7 +6,7 @@ LABEL docker_image_name="BMEVITMAV45"
 LABEL description="This container is created to develop a PAM model to solve the BirdCLEF problem"
 LABEL com.centurylinklabs.watchtower.enable="true"
 
-WORKDIR /mcts_batch_optimization_cv
+WORKDIR /bmevitmav
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -qy \
@@ -40,8 +40,8 @@ COPY . .
 RUN pip3 install -r requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/"
-ENV PYTHONPATH "${PYTHONPATH}:/mcts_batch_optimization_cv/"
+ENV PYTHONPATH "${PYTHONPATH}:/bmevitmav/"
 
-RUN echo "cd /mcts_batch_optimization_cv" >> /root/.bashrc
+RUN echo "cd /bmevitmav" >> /root/.bashrc
 
 CMD ["/usr/sbin/sshd", "-D"]
