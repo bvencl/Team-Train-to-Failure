@@ -1,5 +1,11 @@
+ipython==8.12.3
+joblib==1.4.2
+librosa==0.10.2.post1
 matplotlib==3.9.2
 numpy==2.1.1
 pandas==2.2.3
 Pillow==10.4.0
+scikit_learn==1.5.2
+soundfile==0.12.1
 torch==2.4.1
+tqdm==4.66.5
