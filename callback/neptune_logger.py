@@ -32,3 +32,4 @@ class CustomNeptuneLogger(NeptuneLogger):
 
     def stop(self):
         self.run.stop()
+        

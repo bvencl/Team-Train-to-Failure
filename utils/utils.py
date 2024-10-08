@@ -10,17 +10,19 @@ from configparser import ConfigParser
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description='Configuration file for training')
-    parser.add_argument('--config', '-c', type=str, default='config.ini', help='Configuration file')
+    parser = argparse.ArgumentParser(description="Configuration file for training")
+    parser.add_argument(
+        "--config", "-c", type=str, default="config.ini", help="Configuration file"
+    )
     return parser.parse_args()
 
 
 def read(path):
     file_conf = ConfigParser()
 
-    if not path.endswith('.ini'):
-        path += '.ini'
-    
+    if not path.endswith(".ini"):
+        path += ".ini"
+
     try:
         file_conf.read(path, encoding="utf8")
     except:
@@ -40,8 +42,8 @@ def read(path):
 
 
 def unpickle(file):
-    with open(file, 'rb') as fo:
-        dictionary = pickle.load(fo, encoding='bytes')
+    with open(file, "rb") as fo:
+        dictionary = pickle.load(fo, encoding="bytes")
     return dictionary
 
 
@@ -50,7 +52,7 @@ def set_seeds(seed):
     Setting packages seed
     """
     os.environ["PYTHONHASHSEED"] = str(seed)
-    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

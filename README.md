@@ -12,7 +12,7 @@ Damien Karras vagyok
 
 ## BirdCLEF competition
 
-The Kaggle BirdCLEF 2024 competition aims to challenge participants to develop machine learning solutions for recognizing bird species through audio-based identification, focusing particularly on understudied Indian bird species in the Western Ghats, a biodiversity hotspot. The task relies on Passive Acoustic Monitoring (PAM) to support large-scale bird observation and enhance the accuracy of biodiversity assessments. Participants will need to process continuous audio recordings to identify bird species, with a special emphasis on nocturnal and endangered species that have limited training data available.
+The **Kaggle BirdCLEF 2024** competition aims to challenge participants to develop machine learning solutions for recognizing bird species through audio-based identification, focusing particularly on understudied Indian bird species in the Western Ghats, a biodiversity hotspot. The task relies on Passive Acoustic Monitoring (PAM) to support large-scale bird observation and enhance the accuracy of biodiversity assessments. Participants will need to process continuous audio recordings to identify bird species, with a special emphasis on nocturnal and endangered species that have limited training data available.
 
 The competition's broader goal is to support conservation efforts by providing technological solutions that help monitor bird populations and guide effective conservation actions. By advancing such innovations, the competition aims to improve the accuracy and regularity of avian population surveys, thereby aiding in biodiversity protection efforts.
 
@@ -45,6 +45,12 @@ Ki kiell nyerni az adatokat az adathalmazból. Meg kell ismerni a struktúrát. 
 
 
 
-##
+
+
+## Acknowledgements
 
 The project was developed within the framework of the subject "Deep Learning in Practice with Python and LUA" (BMEVITMAV45) at the Faculty of Electrical Engineering and Informatics of Budapest University of Technology and Economics.
+
+We used generative airtificial intelligence for the following purpuses:
+ - code refactoring (**not writing code!**)
+ - code commenting
