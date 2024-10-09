@@ -12,7 +12,7 @@ class CallbackFactory:
 
         if config.callbacks.neptune_logger:
             token = config.callbacks.neptune_token
-            project = config.callbachs.neptune_project
+            project = config.callbacks.neptune_project
             if token is None or project is None:
                 raise ValueError("Neptune token adn/or project are/is not defined.")
 
@@ -43,9 +43,9 @@ class CallbackFactory:
                 loaded_values=(val_loss, val_acc) if loaded_checkpoint else None,
             )
             my_callbacks["model_checkpoint"] = checkpoint
-            if verbose:
+            if verbose and loaded_checkpoint:
                 print(
-                    f"Model loaded to model checkpoint with {val_acc} validation accuracy and {val_acc} validation loss!"
+                    f"Model loaded to model checkpoint with {val_acc} validation accuracy and {val_loss} validation loss!"
                 )
 
-            return my_callbacks
+        return my_callbacks

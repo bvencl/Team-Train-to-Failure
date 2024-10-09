@@ -4,6 +4,7 @@ import torch
 
 
 # TODO függvényösszevonás, ez így cigány
+# TODO elbaszva a touple helyett más van a paramétereknél
 class ModelCheckpoint:
     def __init__(self, type, verbose, path, neptune_logger, loaded_values):
         self.verbose = verbose
