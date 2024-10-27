@@ -2,12 +2,14 @@ import os
 import torch
 from callback.neptune_logger import CustomNeptuneLogger
 from callback.model_checkpoint import ModelCheckpoint
+from utils.validate_model import validate_model
+
 
 class CallbackFactory:
 
     @classmethod
     def create(cls, **kwargs):
-        my_callbacks = []
+        my_callbacks = {}
         config = kwargs["config"]
 
         if config.callbacks.neptune_logger:
@@ -22,14 +24,16 @@ class CallbackFactory:
             neptune_logger_callback.start_logging(kwargs["model"])
             my_callbacks["neptune_logger"] = neptune_logger_callback
 
-        # TODO ADD validate_model function
         if config.callbacks.model_checkpoint:
             path = config.paths.model_checkpoint_path
-            loaded_checkpoint = os.path.exists(path)
-            if loaded_checkpoint:
-                kwargs["model"].load_state_dict(torch.load(path), weights_only=True)
+            loaded_checkpoint = os.path.exists(path + "checkpoint.pth")
+            if loaded_checkpoint and config.callbacks.remove_previous_checkpoint_at_start:
+                os.remove(path + "checkpoint.pth")
+                loaded_checkpoint = False
+            elif loaded_checkpoint:
+                kwargs["model"].load_state_dict(torch.load(path + "checkpoint.pth"))
                 val_loss, val_acc = validate_model(
-                    kwargs["model"], kwargs["val_loader"], kwargs["lossfn"]
+                    kwargs["model"], kwargs["val_loader"], kwargs["criterion"]
                 )
             verbose = config.callbacks.model_checkpoint_verbose
 
@@ -45,7 +49,7 @@ class CallbackFactory:
             my_callbacks["model_checkpoint"] = checkpoint
             if verbose and loaded_checkpoint:
                 print(
-                    f"Model loaded to model checkpoint with {val_acc} validation accuracy and {val_loss} validation loss!"
+                    f"Model loaded to model checkpoint with {val_acc} validation accuracy and {val_loss} validation loss"
                 )
 
         return my_callbacks

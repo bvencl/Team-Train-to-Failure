@@ -19,14 +19,12 @@ def load_data():
     ]
     df = pd.read_csv(csv_path, usecols=columns_to_read)
 
-    primary_label_column = 'primary_label'  # Cseréld le a megfelelő oszlopnévre
+    primary_label_column = 'primary_label'
 
     one_hot_encoded_labels = pd.get_dummies(df[primary_label_column], prefix=primary_label_column)
 
-    # Hozzáadjuk a one-hot kódolt oszlopokat az eredeti DataFrame-hez
     df = pd.concat([df, one_hot_encoded_labels], axis=1)
 
-    # Eltávolítjuk az eredeti primary label oszlopot, ha szükséges
     df.drop(columns=[primary_label_column], inplace=True)
 
 
