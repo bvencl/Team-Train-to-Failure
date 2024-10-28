@@ -7,15 +7,18 @@ def main():
 
     args = get_args()
     config = read(args.config)
-    seed = config.utils.seed
+    seed = config.trainer.seed
     set_seeds(seed)
 
 
-    df_train, df_val, df_test = load_data()
+    df_train, df_val, df_test = load_data(config)
 
-    train_loader, val_loader, test_loader = DataLoaderFactory(config, df_train, df_val, df_test)
+    print(df_train.shape)
+    print(df_train)
 
-    callbacks = CallbackFactory(config, model, val_loader, test_loader, lossfn)
+    # train_loader, val_loader, test_loader = DataLoaderFactory(config, df_train, df_val, df_test)
+
+    # callbacks = CallbackFactory(config, model, val_loader, test_loader, lossfn)
 
 if __name__ == "__main__":
     main()
