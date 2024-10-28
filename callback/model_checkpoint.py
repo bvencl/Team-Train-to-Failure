@@ -2,9 +2,6 @@ import os
 import numpy as np
 import torch
 
-
-# TODO elbaszva a touple helyett más van a paramétereknél
-
 class ModelCheckpoint:
     def __init__(self, type, verbose, path, neptune_logger, loaded_values):
         self.verbose = verbose
@@ -36,5 +33,5 @@ class ModelCheckpoint:
         torch.save(model.state_dict(), self.path + "checkpoint.pth")
 
         if self.neptune_logger is not None:
-            neptune_namespace["metrics/checkpoint_loss"].append(val_loss)
-            neptune_namespace["metrics/checkpoint_accuracy"].append(val_acc)
+            neptune_namespace["checkpoint_loss"].append(val_loss)
+            neptune_namespace["checkpoint_accuracy"].append(val_acc)

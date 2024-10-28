@@ -27,7 +27,10 @@ class CallbackFactory:
         if config.callbacks.model_checkpoint:
             path = config.paths.model_checkpoint_path
             loaded_checkpoint = os.path.exists(path + "checkpoint.pth")
-            if loaded_checkpoint and config.callbacks.remove_previous_checkpoint_at_start:
+            if (
+                loaded_checkpoint
+                and config.callbacks.remove_previous_checkpoint_at_start
+            ):
                 os.remove(path + "checkpoint.pth")
                 loaded_checkpoint = False
             elif loaded_checkpoint:
@@ -49,7 +52,8 @@ class CallbackFactory:
             my_callbacks["model_checkpoint"] = checkpoint
             if verbose and loaded_checkpoint:
                 print(
-                    f"Model loaded to model checkpoint with {val_acc} validation accuracy and {val_loss} validation loss"
+                    f"Model loaded to model checkpoint with {
+                        val_acc} validation accuracy and {val_loss} validation loss"
                 )
 
         return my_callbacks

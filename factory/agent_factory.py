@@ -22,9 +22,9 @@ class AgentFactory(BaseFactory):
             raise NotImplementedError("Invalid loss type ('cross_entropy' or 'focal_loss')")
 
         if optimizer_name == "sgd":
-            optimizer = optim.SGD(model.parameters(), lr=config.agent.learning_rate)
+            optimizer = optim.SGD(model.parameters(), lr=config.agent.lr_start)
         elif optimizer_name == "adam":
-            optimizer = optim.Adam(model.parameters(), lr=config.agent.learning_rate)
+            optimizer = optim.Adam(model.parameters(), lr=config.agent.lr_start)
         elif optimizer_name == "rmsprop":
             optimizer = optim.RMSprop(model.parameters(), lr=config.getfloat("agent", "learning_rate"))
         else:
@@ -40,12 +40,13 @@ class AgentFactory(BaseFactory):
                 lr_scheduler = WarmupCosineAnnealingLR(optimizer=optimizer,
                                                        T_max=T_max,
                                                        warmup_epochs=config.agent.warmup_epochs,
-                                                       eta_min=config.agent.lr_min,
-                                                       eta_max=config.agent.warmup_lr_high)
+                                                       eta_min=config.agent.lr_end,
+                                                       eta_max=config.agent.lr_warmup_end,
+                                                       verbose=config.agent.lr_verbose)
             elif decay_strategy == "lin":
                 lr_scheduler = optim.lr_scheduler.LinearLR(optimizer=optimizer)
             elif decay_strategy == "exp":
-                lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.99)
+                lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=config.agent.exp_gamma)
             else:
                 raise ValueError("Invalid learning rate scheduler "
                                  "('cos' or 'warmup_cos' or 'lin' or 'exp')")

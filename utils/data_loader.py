@@ -20,17 +20,17 @@ def load_data(config):
     ]
     df = pd.read_csv(csv_path, usecols=columns_to_read)
 
-    df = df[:100]
+    df = df[: config.data.data_num_for_testing]
 
-    df = df[df.groupby('primary_label')['primary_label'].transform('count') >= config.data.min_samples_in_class]
+    df = df[
+        df.groupby("primary_label")["primary_label"].transform("count")
+        >= config.data.min_samples_in_class
+    ]
 
     one_hot_encoded_labels = pd.get_dummies(
         df["primary_label"], prefix="primary_label"
     ).astype(int)
     df["one_hot_vector"] = one_hot_encoded_labels.values.tolist()
-    
-    print(df['primary_label'].value_counts())
-
 
     train_df, temp_df = train_test_split(
         df,

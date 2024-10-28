@@ -1,9 +1,9 @@
 FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
 LABEL maintainer1="bodi.vencel04@gmail.com"
-LABEL maintainer2="@mitimark"
+LABEL maintainer2="mitrengamark@edu.bme.hu"
 LABEL docker_image_name="BMEVITMAV45"
-LABEL description="This container is created to develop a PAM model to solve the BirdCLEF problem"
+LABEL description="This container is created to develop a CNN model to solve the BirdCLEF problem"
 LABEL com.centurylinklabs.watchtower.enable="true"
 
 WORKDIR /bmevitmav

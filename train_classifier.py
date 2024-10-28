@@ -1,8 +1,12 @@
 from utils.data_loader import *
 from utils.utils import *
-# from utils.validate_model import validate_model
+from utils.trainer import Trainer
 from factory.callback_factory import CallbackFactory
 from factory.dataloader_factory import DataLoaderFactory
+from factory.agent_factory import AgentFactory
+from factory.model_factory import ModelFactory
+
+
 def main():
 
     args = get_args()
@@ -10,15 +14,37 @@ def main():
     seed = config.trainer.seed
     set_seeds(seed)
 
-
     df_train, df_val, df_test = load_data(config)
 
-    print(df_train.shape)
-    print(df_train)
+    train_loader, val_loader, test_loader = DataLoaderFactory.create(
+        config=config, train=df_train, val=df_val, test=df_test
+    )
+    model = ModelFactory.create(
+        config=config, num_classes=df_train["primary_label"].nunique()
+    )
+    lossfn, optimizer, lr_scheduler = AgentFactory.create(config=config, model=model)
+    callbacks = CallbackFactory.create(
+        config=config,
+        model=model,
+        val_loader=val_loader,
+        test_loader=test_loader,
+        lossfn=lossfn,
+    )
 
-    # train_loader, val_loader, test_loader = DataLoaderFactory(config, df_train, df_val, df_test)
+    trainer = Trainer(
+        config=config,
+        criterion=lossfn,
+        optimizer=optimizer,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        test_loader=test_loader,
+        lr_scheduler=lr_scheduler,
+        callbacks=callbacks,
+        model=model,
+    )
 
-    # callbacks = CallbackFactory(config, model, val_loader, test_loader, lossfn)
+    trainer.train()
+
 
 if __name__ == "__main__":
     main()
