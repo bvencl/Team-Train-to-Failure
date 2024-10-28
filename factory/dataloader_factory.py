@@ -1,7 +1,5 @@
 import torch
-
 from torch.utils.data import DataLoader
-
 from factory.base_factory import BaseFactory
 
 
