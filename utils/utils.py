@@ -10,6 +10,7 @@ from configparser import ConfigParser
 
 
 def get_args():
+    """Just the usual argument parser you would use in any project"""
     parser = argparse.ArgumentParser(description="Configuration file for training")
     parser.add_argument(
         "--config", "-c", type=str, default="config.ini", help="Configuration file"
@@ -18,6 +19,7 @@ def get_args():
 
 
 def read(path):
+    """Reading the config.ini file. Technically not relevant for this project"""
     file_conf = ConfigParser()
 
     if not path.endswith(".ini"):
@@ -41,16 +43,8 @@ def read(path):
     return conf
 
 
-def unpickle(file):
-    with open(file, "rb") as fo:
-        dictionary = pickle.load(fo, encoding="bytes")
-    return dictionary
-
-
 def set_seeds(seed):
-    """
-    Setting packages seed
-    """
+    """Setting seeds for (hopefully) all packages used"""
     os.environ["PYTHONHASHSEED"] = str(seed)
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     random.seed(seed)
