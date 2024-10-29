@@ -23,7 +23,7 @@ def main():
     visualizer.show_and_play(df_train)
 
     # !The following are not relevant for the first milestone!
-    if False: 
+    if True: 
         train_loader, val_loader, test_loader = DataLoaderFactory.create(
             config=config, train=df_train, val=df_val, test=df_test
         )
