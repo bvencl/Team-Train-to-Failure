@@ -7,5 +7,5 @@ scikit_learn
 matplotlib
 pandas
 Pillow
+kaggle
 numpy
-subprocess
