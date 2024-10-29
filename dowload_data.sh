@@ -10,7 +10,7 @@ if [ ! -f ~/.kaggle/kaggle.json ]; then
 fi
 
 mkdir -p "$DESTINATION_FOLDER"
-
+exho "This is maybe a good time to grab some tea or coffe, this is gonna take a while!"
 kaggle competitions download -c "$COMPETITION_NAME" -p "$DESTINATION_FOLDER"
 
 ZIP_FILE="$DESTINATION_FOLDER/$COMPETITION_NAME.zip"
