@@ -26,7 +26,7 @@ def load_data(config):
         "common_name",
         "filename",
     ]
-    # Your good'ol Pandas dataframe... Gonna cause some trouble
+    # Your good'ol Pandas DataFrame... Gonna cause some trouble later...
     df = pd.read_csv(csv_path, usecols=columns_to_read)
 
     # Reducing the size of the dataset while testing.

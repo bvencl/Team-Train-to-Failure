@@ -1,5 +1,5 @@
 from factory.base_factory import BaseFactory
-from dataprocessing.data_loader import load_data
+from data_loader.data_loader import load_data
 class DatasetFactory(BaseFactory):
     
     @classmethod

@@ -7,7 +7,7 @@ from factory.model_factory import ModelFactory
 from utils.visualizer import Visualizer
 
 
-from dataprocessing.data_loader import *
+from data_loader.data_loader import *
 
 """We commented only those files that are relevant for the current (first) milestone"""
 
