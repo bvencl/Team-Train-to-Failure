@@ -28,9 +28,9 @@ Simply run the `download_data.sh` shell script to fetch the data into the **data
 Here’s a quick look at the files that matter for this milestones:
 
  - **train_classifier.py**: The big one. Run this after setting up the dataset and installing the packages in `requirements.txt`. This will start our bird-identifying beast (at some point at least hopefully).
- - **dataloader/dataloader.py**: This script does the heavy lifting of loading, converting to mel-spectrograms, standardizing, and organizing metadata into a pandas DataFrame. At some point, this will probably evolve into a Torch DataLoader...because *evolution* is a thing in both biology and data science.
+ - **dataloader/data_loader.py**: This script does the heavy lifting of loading, converting to mel-spectrograms, standardizing, and organizing metadata into a pandas DataFrame. At some point, this will probably evolve into a Torch DataLoader...because *evolution* is a thing in both biology and data science.
  - **utils/visualise.py**: A little helper to visualize spectrograms and play the sounds. Handy for spotting noise or admiring the symphonies of our feathered friends before we mangle them into training data.
-
+ - **utils/utils.py**: Well... We know no one likes the mysterious *"utils.py"* or *"utils.h"*, but there was no better place for functions so useful like these...
 
 ## Acknowledgements
 
@@ -40,4 +40,3 @@ Generative AI was (ethically!) employed for:
  - Code refactoring (**not writing code!** just keeping things neat)
  - Writing and refining comments (because clarity is key, even for scripts)
  - Maybe a little help with this readme (no one likes when their readme is full of typos)
- 
