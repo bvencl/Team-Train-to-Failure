@@ -8,3 +8,4 @@ matplotlib
 pandas
 Pillow
 numpy
+subprocess
