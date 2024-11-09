@@ -19,8 +19,8 @@ def main():
 
     df_train, df_val, df_test = load_data(config)
 
-    visualizer = Visualizer()
-    visualizer.show_and_play(df_train)
+    visualizer = Visualizer(df_train)
+    visualizer.show_and_play()
 
     # !The following are not relevant for the first milestone!
     if False: 

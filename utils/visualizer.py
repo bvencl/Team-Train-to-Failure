@@ -1,70 +1,66 @@
 import matplotlib.pyplot as plt
 import librosa as lb
-import numpy as np
 import subprocess
-
+import threading
 
 class Visualizer():
-    def __init__(self):
-        pass
+    def __init__(self, data_frame):
+        self.random_row = data_frame.sample(n=1).iloc[0]
+        self.filename =  self.random_row['filename']
+        self.filepath = f"data/train_audio/{self.filename}"
+        self.mel_spectogram = self.random_row['mel_spectrogram']
+        self.audio, self.sr = lb.load(self.filepath, sr=32000)
+        self.duration = len(self.audio) / self.sr
         
         
-    def show_sound(self, random_row):
+    def show_sound(self):
         """
         Displays the mel spectrogram of the audio file specified in the random_row.
         
         Parameters:
         random_row (pd.Series): A row from the DataFrame containing the mel spectrogram and filename.
         """
-        mel_spectogram = random_row['mel_spectrogram']
-        filename = random_row['filename']
-        filepath = f"data/train_audio/{filename}"
 
-        # Load the audio file to get the sample rate and duration
-        audio, sr = lb.load(filepath, sr=None)
-        duration = len(audio) / sr
-        
-        # Compute the mel spectrogram and convert it to decibel scale
-        mel_spectogram = lb.feature.melspectrogram(y=audio, sr=sr)
-        mel_spectogram_db = lb.power_to_db(mel_spectogram, ref=np.max)
-
-        if mel_spectogram is not None: # Check if the spectrogram is not None
-            plt.ion()
+        if self.mel_spectogram is not None: # Check if the spectrogram is not None
+            #plt.ion()
             plt.figure(figsize=(10, 4))
-            lb.display.specshow(mel_spectogram_db, sr=sr, x_axis="time", y_axis="mel", fmax=sr / 2)
+            lb.display.specshow(self.mel_spectogram, x_axis="time", y_axis="mel")
             plt.colorbar(format="%+2.0f dB")
-            plt.title(f"Mel Spectrogram (dB) - {filename}")
+            plt.title(f"Mel Spectrogram (dB) - {self.filename}")
             plt.xlabel("Time")
             plt.ylabel("Frequency")
-            plt.xlim([0, duration])
+            plt.xlim(0, self.duration)
             plt.tight_layout()
             plt.show()
-            plt.draw()
-            plt.pause(0.001)
+            #plt.draw()
+            #plt.pause(0.001)
         else:
             print("The selected spectrogram is None.")
 
-    def play_sound(self, random_row):
+
+    def play_sound(self):
         """
         Plays the audio file specified in the random_row using ffplay.
         
         Parameters:
         random_row (pd.Series): A row from the DataFrame containing the filename.
         """
-        filename = random_row['filename']
-        filepath = f"data/train_audio/{filename}"
-        subprocess.run(['ffplay', '-nodisp', '-autoexit', filepath])
-        plt.ioff()
-        plt.show()
+        subprocess.run(['cvlc', '--play-and-exit', self.filepath])
 
-    def show_and_play(self, data_frame):
+    def show_and_play(self):
         """
         Selects a random row from the DataFrame, displays the mel spectrogram, and plays the audio.
         
         Parameters:
         data_frame (pd.DataFrame): The DataFrame containing the mel spectrograms and filenames.
         """
-        random_row = data_frame.sample(n=1).iloc[0]
-        self.show_sound(random_row)
-        self.play_sound(random_row)
-        print(random_row)
+        play_thread = threading.Thread(target=self.play_sound)
+        play_thread.start()
+        self.show_sound()
+        play_thread.join()
+
+        plt.ioff()
+        plt.show()
+
+        print(self.random_row)
+        print(f"Duration: {self.duration} seconds")
