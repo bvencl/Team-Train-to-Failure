@@ -22,7 +22,6 @@ class Visualizer():
         """
 
         if self.mel_spectogram is not None: # Check if the spectrogram is not None
-            #plt.ion()
             plt.figure(figsize=(10, 4))
             lb.display.specshow(self.mel_spectogram, x_axis="time", y_axis="mel")
             plt.colorbar(format="%+2.0f dB")
@@ -31,9 +30,10 @@ class Visualizer():
             plt.ylabel("Frequency")
             plt.xlim(0, self.duration)
             plt.tight_layout()
+            plt.text(0.01, 0.02, f"Duration: {self.duration:.2f} seconds", ha='left', va='bottom',
+                     transform=plt.gca().transAxes, fontsize=10,
+                     bbox=dict(facecolor='white', alpha=0.5))
             plt.show()
-            #plt.draw()
-            #plt.pause(0.001)
         else:
             print("The selected spectrogram is None.")
 
@@ -46,6 +46,7 @@ class Visualizer():
         random_row (pd.Series): A row from the DataFrame containing the filename.
         """
         subprocess.run(['cvlc', '--play-and-exit', self.filepath])
+        # subprocess.run(['ffplay', '-nodisp', '-autoexit', self.filepath])
 
     def show_and_play(self):
         """
