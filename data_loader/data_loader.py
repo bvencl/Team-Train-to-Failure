@@ -91,7 +91,7 @@ def process_audio(df, dataset_path):
         # STFT makes the magic real
         mel_spec = lb.feature.melspectrogram(y=audio, sr=sr, n_mels=128, fmax=sr / 2)
         mel_spec_db = lb.power_to_db(mel_spec, ref=np.max)
-        mel_spectrograms.append(mel_spec_db.T)
+        mel_spectrograms.append(mel_spec_db)
 
     return mel_spectrograms
 
@@ -101,7 +101,8 @@ def standardize_individually(spectrograms):
     for spec in spectrograms:
         mean = np.mean(spec)
         std = np.std(spec)
-        if std < 1e-6:
+        
+        if (std < 1e-6): # Avoid division by zero
             standardized_spectrograms.append(spec - mean)
         else:
             # Some serious standardization actions
