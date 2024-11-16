@@ -4,10 +4,11 @@ from factory.callback_factory import CallbackFactory
 from factory.dataloader_factory import DataLoaderFactory
 from factory.agent_factory import AgentFactory
 from factory.model_factory import ModelFactory
+from factory.dataset_factory import DatasetFactory
 from utils.visualizer import Visualizer
 
 
-from data_loader.data_loader import *
+from data_loader.load_data import *
 
 """We commented only those files that are relevant for the current (first) milestone"""
 
@@ -17,18 +18,18 @@ def main():
     seed = config.trainer.seed # getting the seeds from the config
     set_seeds(seed)
 
-    df_train, df_val, df_test = load_data(config)
-
-    visualizer = Visualizer(df_train)
-    visualizer.show_and_play()
 
     # !The following are not relevant for the first milestone!
     if True: 
+        train_data, val_data, test_data, num_classes = DatasetFactory().create(config=config)
+        
+        print(f"Number of classes: {num_classes}")
+        
         train_loader, val_loader, test_loader = DataLoaderFactory.create(
-            config=config, train=df_train, val=df_val, test=df_test
+            config=config, train=train_data, val=val_data, test=test_data
         )
         model = ModelFactory.create(
-            config=config, num_classes=df_train["primary_label"].nunique()
+            config=config, num_classes=num_classes
         )
         lossfn, optimizer, lr_scheduler = AgentFactory.create(config=config, model=model)
         callbacks = CallbackFactory.create(

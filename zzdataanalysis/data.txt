@@ -1,0 +1,15 @@
+Mean length: 41.92445170542698s
+Median length: 22.386031746031748s
+Mode length: 8.04s
+Max length: 5964.225034013605s
+Min length: 0.47002267573696144s
+Number of unique lengths: 10166s
+
+10 percentile length: 6.72 s
+25 percentile length: 11.21 s
+50 percentile length: 22.39 s
+75 percentile length: 44.67 s
+90 percentile length: 82.25 s
+95 percentile length: 122.47 s
+99 percentile length: 300.13 s
+100 percentile length: 5964.23 s

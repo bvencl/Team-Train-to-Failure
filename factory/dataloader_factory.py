@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from factory.base_factory import BaseFactory
+from torch.nn.utils.rnn import pad_sequence
 
 
 class DataLoaderFactory(BaseFactory):

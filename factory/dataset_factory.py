@@ -1,26 +1,41 @@
 from factory.base_factory import BaseFactory
-from data_loader.data_loader import load_data
+from data_loader.custom_dataset import BirdClefDataset
+from data_loader.load_data import load_birdclef
+
+
 class DatasetFactory(BaseFactory):
-    
+
     @classmethod
     def create(cls, **kwargs):
         config = kwargs["config"]
 
-        df_train, df_val, df_test = load_data(config)
+        birdclef_data = load_birdclef(config)
 
-        train_data = df_train["mel_spectogram"]
-        train_labels = df_train["one_hot_vector"]
-        train_interpretable_labels = df_train["common_name"]
-        train_position = (df_train["latitude"], df_train["longitude"])
+        train_dataset = BirdClefDataset(
+            data=birdclef_data["train"]["data"],
+            labels=birdclef_data["train"]["labels"],
+            interpretable_labels=birdclef_data["train"]["common_name"],
+            position=birdclef_data["train"]["position"],
+            files=birdclef_data["train"]["files"],
+            transform=birdclef_data["train"]["transforms"],
+        )
+        val_dataset = BirdClefDataset(
+            data=birdclef_data["val"]["data"],
+            labels=birdclef_data["val"]["labels"],
+            interpretable_labels=birdclef_data["val"]["common_name"],
+            position=birdclef_data["val"]["position"],
+            files=birdclef_data["val"]["files"],
+            transform=birdclef_data["val"]["transforms"],
+        )
+        test_dataset = BirdClefDataset(
+            data=birdclef_data["test"]["data"],
+            labels=birdclef_data["test"]["labels"],
+            interpretable_labels=birdclef_data["test"]["common_name"],
+            position=birdclef_data["test"]["position"],
+            files=birdclef_data["test"]["files"],
+            transform=birdclef_data["test"]["transforms"],
+        )
         
-        val_data = df_val["mel_spectogram"]
-        val_labels = df_val["one_hot_vector"]
-        val_interpretable_labels = df_val["common_name"]
-        val_position = (df_val["latitude"], df_val["longitude"])
+        num_classes = birdclef_data["train"]["labels"][0].shape[0]
 
-        test_data = df_test["mel_spectogram"]
-        test_labels = df_test["one_hot_vector"]
-        test_interpretable_labels = df_test["common_name"]
-        test_position = (df_test["latitude"], df_test["longitude"])
-
-        
+        return train_dataset, val_dataset, test_dataset, num_classes

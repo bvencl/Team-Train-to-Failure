@@ -8,7 +8,7 @@ class Visualizer():
         self.random_row = data_frame.sample(n=1).iloc[0]
         self.filename =  self.random_row['filename']
         self.filepath = f"data/train_audio/{self.filename}"
-        self.mel_spectogram = self.random_row['mel_spectrogram']
+        self.mel_spectogram = self.random_row['mel_spectogram']
         self.audio, self.sr = lb.load(self.filepath, sr=32000)
         self.duration = len(self.audio) / self.sr
         

@@ -2,6 +2,7 @@ from abc import abstractmethod
 from torchvision import transforms
 from torch.utils.data import Dataset
 from PIL import Image
+import torch
 import numpy as np
 
 class CustomDataset(Dataset):
@@ -9,24 +10,24 @@ class CustomDataset(Dataset):
         assert len(data) == len(labels), "Length of data and labels must be the same!"
 
         if not isinstance(data, np.ndarray):
-            data = np.array(data)
-
-        if not isinstance(data, np.ndarray):
             labels = np.array(labels)
                               
-        indices = np.array(len(data))
+        indices = np.arange(len(data))
         np.random.shuffle(indices)
-        self.data = data[indices]
+        self.data = [data[i] for i in indices]
         self.labels = labels[indices]
 
         self.transforms = transform
         if interpretable_labels is not None:
-            self.interpretable_labels = interpretable_labels
+            self.interpretable_labels = interpretable_labels[indices]
         else:
             self.interpretable_labels = self.labels
 
         if transform is None:
             self.transforms = transforms.ToTensor()
+            
+        self.data = [self.transforms(d) for d in self.data]
+        self.labels = [torch.tensor(l) for l in self.labels]
 
     def __len__(self):
         return len(self.data)
@@ -41,17 +42,20 @@ class CustomDataset(Dataset):
 
 
 class BirdClefDataset(CustomDataset):
-    def __init__(self, data, labels, transform=None, interpretable_labels=None):
+    def __init__(self, data, labels, position, transform=None, interpretable_labels=None, files=None):
         super().__init__(data, labels, transform, interpretable_labels)
+        self.positions = torch.tensor(position)
+        self.files = files
 
     def __getitem__(self, idx):
         img_data = self.data[idx]
         label = self.labels[idx]
+        position = self.positions[idx]
 
-        if self.transforms:
-            img_data = self.transforms(img_data)
+        if self.files is not None:
+            file = self.files[idx]
 
-        return img_data, label
+        return img_data, label, position, file
 
 
     def get_original_image(self, idx):
