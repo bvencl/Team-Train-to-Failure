@@ -1,63 +1,61 @@
-from abc import abstractmethod
-from torchvision import transforms
-from torch.utils.data import Dataset
-from PIL import Image
+import os
 import torch
+import torchaudio
 import numpy as np
 
-class CustomDataset(Dataset):
-    def __init__(self, data, labels, transform=None, interpretable_labels=None, **kwargs):
-        assert len(data) == len(labels), "Length of data and labels must be the same!"
+class BirdClefDataset(torch.utils.data.Dataset):
+    def __init__(self, metadata_df, config, transform=None):
+        """
+        Initializes the dataset.
 
-        if not isinstance(data, np.ndarray):
-            labels = np.array(labels)
-                              
-        indices = np.arange(len(data))
-        np.random.shuffle(indices)
-        self.data = [data[i] for i in indices]
-        self.labels = labels[indices]
+        Args:
+            metadata_df: DataFrame containing metadata for the dataset. Made by the AudioPreprocesser.
+            config: Configuration object with data-related parameters.
+            transform: Callable, to apply transformations to the data. Made by the TransformFactory.
+        """
+        self.metadata_df = metadata_df
+        self.transform = transform
 
-        self.transforms = transform
-        if interpretable_labels is not None:
-            self.interpretable_labels = interpretable_labels[indices]
-        else:
-            self.interpretable_labels = self.labels
-
-        if transform is None:
-            self.transforms = transforms.ToTensor()
-            
-        self.data = [self.transforms(d) for d in self.data]
-        self.labels = [torch.tensor(l) for l in self.labels]
 
     def __len__(self):
-        return len(self.data)
+        return len(self.metadata_df)
 
-    @abstractmethod    
+    def load_and_transform(self, file_path):
+        """
+        Loads and preprocesses the audio file.
+
+        Args:
+            file_path: Path to the audio file.
+
+        Returns:
+            Transformed waveform.
+        """
+        # Load the audio file
+        spectrogram = np.load(file_path)
+        spectrogram = torch.tensor(spectrogram, dtype=torch.float32)
+
+        # Apply transform if available
+        if self.transform:
+            spectrogram = self.transform(spectrogram)
+        return spectrogram
+
     def __getitem__(self, idx):
-        """Dataset dependent"""
+        """
+        Fetches the item at the given index.
 
-    @abstractmethod
-    def get_original_image(self, idx):
-        """Dataset dependent"""
+        Args:
+            idx: Index of the item to fetch.
 
+        Returns:
+            Transformed data and corresponding label.
+        """
+        row = self.metadata_df.iloc[idx]
+        file_path = row["segment_path"]
+        label = row["label"]
 
-class BirdClefDataset(CustomDataset):
-    def __init__(self, data, labels, position, transform=None, interpretable_labels=None, files=None):
-        super().__init__(data, labels, transform, interpretable_labels)
-        self.positions = torch.tensor(position)
-        self.files = files
+        waveform = self.load_and_transform(file_path)
 
-    def __getitem__(self, idx):
-        img_data = self.data[idx]
-        label = self.labels[idx]
-        position = self.positions[idx]
+        label_idx = self.metadata_df["label"].unique().tolist().index(label)
 
-        if self.files is not None:
-            file = self.files[idx]
+        return waveform, torch.tensor(label_idx, dtype=torch.int64)
 
-        return img_data, label, position, file
-
-
-    def get_original_image(self, idx):
-        img_data = self.data[idx]
-        return Image.fromarray(img_data)

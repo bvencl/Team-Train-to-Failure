@@ -36,46 +36,47 @@ class Trainer:
 #! -------------------------------------------------------------------------------------------------------------------------------------
 
     def train(self):
-        if self.neptune_logger:
-            self.neptune_namespace["lr"].append(float(self.lr_scheduler.get_lr()[-1]))
-
         for epoch in range(self.n_epochs):
             self.model.train()
             running_loss, correct_train = 0.0, 0
 
-            for i, (inputs, labels) in enumerate(self.train_loader):    
-                inputs, labels = inputs.to(self.device), labels.to(self.device)            
+
+            for i, (inputs, labels) in enumerate(self.train_loader):
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
                 outputs = self.model(inputs)
-                loss = self.criterion(outputs, labels.clone())
-
+                loss = self.criterion(outputs, labels)
                 loss.backward()
                 self.optimizer.step()
 
                 running_loss += loss.item()
                 _, predicted = outputs.max(1)
-                correct_train += (predicted == labels).sum().item()
+                correct_train += predicted.eq(labels).sum().item()
 
-                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, i * len(inputs), len(self.train_loader.dataset), 100. * i / len(self.train_loader), loss.item()))
+                print(f'Train Epoch: {epoch} [{i * len(inputs)}/{len(self.train_loader.dataset)}'
+                      f'({100. * (i + 1) / len(self.train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
 
             train_loss = running_loss / len(self.train_loader)
-            train_acc = 100. * correct_train / len(self.train_loader.dataset)
-            
-            val_loss, val_acc = validate_model(model=self.model,data_loader=self.val_loader, criterion=self.criterion)
+            train_acc = correct_train / len(self.train_loader.dataset)
+
+            val_loss, val_acc = validate_model(model=self.model, data_loader=self.val_loader, criterion=self.criterion)
 
             if self.neptune_logger:
                 self.neptune_namespace["train_acc"].append(train_acc)
-                self.neptune_namespace["train_loss"].append(loss.item())
+                self.neptune_namespace["train_loss"].append(train_loss)
                 self.neptune_namespace["val_acc"].append(val_acc)
                 self.neptune_namespace["val_loss"].append(val_loss)
-            
+                self.neptune_namespace["lr"].append(self.lr_scheduler.get_last_lr()[0])
+
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
-            
+
             if self.model_checkpoint:
                 self.checkpoint(val_loss, val_acc, self.model, self.neptune_namespace)
 
             print(
-                f"Epoch {epoch + 1}/{self.n_epochs} - Train loss: {train_loss[-1]:.4f},"
-                f"Train accuracy: {train_acc:.2f}%, Val loss: {val_loss:.4f},"
-                f"Val accuracy: {val_acc:.2f}%")
+                f"Epoch {epoch + 1}/{self.n_epochs} - Train loss: {train_loss:.4f}, "
+                f"Train accuracy: {100 * train_acc:.2f}%, Val loss: {val_loss:.4f}, "
+                f"Val accuracy: {100 * val_acc:.2f}%"
+            )
+

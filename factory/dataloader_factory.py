@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
 from factory.base_factory import BaseFactory
-from torch.nn.utils.rnn import pad_sequence
 
 
 class DataLoaderFactory(BaseFactory):
@@ -30,7 +29,7 @@ class DataLoaderFactory(BaseFactory):
             pin_memory=True if device != "" else False,
             pin_memory_device=device,
         )
-        print(f'Number of validation batches: {len(train_loader)}')
+        print(f'Number of validation batches: {len(val_loader)}')
 
         test_loader = DataLoader(
             dataset=test_dataset,
@@ -39,6 +38,6 @@ class DataLoaderFactory(BaseFactory):
             pin_memory=True if device != "" else False,
             pin_memory_device=device,
         )
-        print(f'Number of test batches: {len(train_loader)}')
+        print(f'Number of test batches: {len(test_loader)}')
 
         return train_loader, val_loader, test_loader

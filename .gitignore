@@ -2,6 +2,7 @@
 **.ogg
 team_readme.md
 hidden
+processed_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
