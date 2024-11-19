@@ -1,5 +1,3 @@
-import subprocess
-
 import matplotlib.pyplot as plt
 import librosa as lb
 import numpy as np
@@ -12,12 +10,13 @@ class Visualiser():
 
     def __call__(self, y=None, sr=32000, filename=None, df_row=None):
         """
-        Displays the mel spectrogram of the audio file or spectrogram provided.
+        Displays the mel spectrogram of the given audio or spectrogram data. You can provide either the audio data, or the appropriate row from the pandas DataFrame containing the metadata.
 
         Parameters:
         y (numpy.ndarray or torch.Tensor, optional): Mel spectrogram data.
         sr (int, optional): Sampling rate of the audio.
         filename (str, optional): Path to the file containing audio or spectrogram.
+        df_row (pandas.Series, optional): Row from the metadata DataFrame.
         """
 
         if df_row is not None:

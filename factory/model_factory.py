@@ -9,6 +9,24 @@ from factory.base_factory import BaseFactory
 class ModelFactory(BaseFactory):
     @classmethod
     def create(cls, **kwargs):
+        """
+        Create a model based on the provided configuration.
+        Args:
+            cls: The class type.
+            **kwargs: Arbitrary keyword arguments. Expected keys include:
+                - config: A configuration object with the following attributes:
+                    - model.type (str): The type of model to create. Options are "own", 
+                      "mobilenet_v3_small", "mobilenet_v3_large", "efficientnet_v2_s", 
+                      "efficientnet_v2_m", "efficientnet_v2_l".
+                    - model.transfer_learning (bool): Whether to use pre-trained weights.
+                - num_classes (int, optional): The number of output classes for the model. 
+                  Defaults to 170 for EfficientNet models.
+        Returns:
+            torch.nn.Module: The created model, moved to the appropriate device (CPU or GPU).
+        Raises:
+            NotImplementedError: If the specified model type is not implemented or invalid.
+        """
+        
         device = "cuda" if torch.cuda.is_available() else "cpu"
         device = torch.device(device=device)
 
@@ -18,7 +36,7 @@ class ModelFactory(BaseFactory):
         ].model.transfer_learning  # nem sok értelme van
 
         if model == "own":
-            ...
+            raise NotImplementedError("Not implemented yet")
 
         elif model == "mobilenet_v3_small":
             my_model = mobilenet_v3_small(

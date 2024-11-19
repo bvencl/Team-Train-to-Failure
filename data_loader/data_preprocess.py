@@ -39,9 +39,6 @@ class AudioPreprocesser:
                 
                 full_meta_df = pd.read_csv(final_metadata_path)
                 
-                # if self.visualiser is not None and self.config.testing.testing:
-                #     self.visualiser(df_row=full_meta_df.iloc[1])
-                
                 return self._split_data(full_meta_df)
         else:
             with open(hash_file_path, "w") as f:
@@ -82,10 +79,7 @@ class AudioPreprocesser:
         with open(hash_file_path, "w") as f:
             f.write(config_hash)
         print(f"Metadata saved to {final_metadata_path}.")
-
-        # if self.visualiser is not None:
-        #     self.visualiser(df_row=full_meta_df.iloc[1])
-
+        
         return self._split_data(full_meta_df)
 
     def _split_data(self, full_meta_df):

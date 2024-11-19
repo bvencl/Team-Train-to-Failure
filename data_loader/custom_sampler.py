@@ -3,6 +3,7 @@ from torch.utils.data import Sampler
 import torch
 import math
 
+#! DEPRACTED ! 
 
 class CustomSampler(Sampler):
     def __init__(self, data_source, batch_size):
