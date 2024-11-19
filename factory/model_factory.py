@@ -33,7 +33,7 @@ class ModelFactory(BaseFactory):
         model = kwargs["config"].model.type
         transfer_learning = kwargs[
             "config"
-        ].model.transfer_learning  # nem sok értelme van
+        ].model.transfer_learning
 
         if model == "own":
             raise NotImplementedError("Not implemented yet")
@@ -75,12 +75,12 @@ class ModelFactory(BaseFactory):
                 )
             )
 
-            # Modifying the first convolution layer for grayscale input
+
             my_model.features[0][0] = torch.nn.Conv2d(
                 1, 24, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False
             )
 
-            # Modifying the classifier
+
             num_classes = kwargs.get("num_classes", 170)
             my_model.classifier[1] = nn.Linear(
                 my_model.classifier[1].in_features, num_classes
@@ -93,7 +93,7 @@ class ModelFactory(BaseFactory):
                 )
             )
 
-            # Modifying the first convolution layer for grayscale input
+
             my_model.features[0][0] = torch.nn.Conv2d(
                 1, 24, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False
             )
@@ -111,12 +111,10 @@ class ModelFactory(BaseFactory):
                 )
             )
 
-            # Modifying the first convolution layer for grayscale input
             my_model.features[0][0] = torch.nn.Conv2d(
                 1, 24, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False
             )
 
-            # Modifying the classifier
             num_classes = kwargs.get("num_classes", 170)
             my_model.classifier[1] = nn.Linear(
                 my_model.classifier[1].in_features, num_classes

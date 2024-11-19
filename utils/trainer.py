@@ -1,6 +1,4 @@
 import torch
-import copy
-import os
 from utils.validate_model import validate_model
 
 
@@ -80,3 +78,7 @@ class Trainer:
                 f"Val accuracy: {100 * val_acc:.2f}%"
             )
 
+        if self.checkpoint:
+            self.model.load_state_dict(self.config.paths.model_checkpoint_path + 'chcecpoint.pth', weights_only=True) 
+
+        return self.model
