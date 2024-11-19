@@ -237,9 +237,6 @@ class AudioPreprocesser:
 
         np.save(save_path, y.numpy())
 
-        if self.config.testing.testing:
-            print(f"Saved segment {segment_index} for file {path} at {save_path}")
-
         return save_path, y.shape[1]
 
     def _compute_config_hash(self):
