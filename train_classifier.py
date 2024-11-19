@@ -8,6 +8,7 @@ from factory.dataset_factory import DatasetFactory
 from factory.transform_factory import TransformFactory
 from data_loader.data_preprocess import AudioPreprocesser
 from callback.visualiser import Visualiser
+from utils.final_validation import final_validation
 
 
 def main():
@@ -61,7 +62,10 @@ def main():
         callbacks=callbacks,
         model=model,
     )
-    trainer.train()
+    
+    model = trainer.train()
+    
+    final_validation(model=model, data_loader=test_loader, criterion=lossfn, num_classes=num_classes)
 
 
 if __name__ == "__main__":
