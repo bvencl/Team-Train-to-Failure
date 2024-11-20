@@ -3,6 +3,7 @@
 team_readme.md
 hidden
 processed_data
+*.pth
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
