@@ -79,6 +79,6 @@ class Trainer:
             )
 
         if self.checkpoint:
-            self.model.load_state_dict(self.config.paths.model_checkpoint_path + 'chcecpoint.pth', weights_only=True) 
+            self.model.load_state_dict(torch.load(self.config.paths.model_checkpoint_path + 'checkpoint.pth', weights_only=True)) 
 
         return self.model
