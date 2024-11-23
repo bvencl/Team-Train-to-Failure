@@ -25,7 +25,4 @@ def load_metadata(config):
     df["file_path"] = df["filename"].apply(lambda x: os.path.join(audio_path, x))
     df = df[df["file_path"].apply(os.path.exists)]
 
-    # Keep only the rows with the primary_label
-    df = df[df.groupby("primary_label")["primary_label"].transform("count") >= config.data.min_samples_in_class]
-
     return df

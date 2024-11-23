@@ -84,7 +84,7 @@ class CustomNeptuneLogger(NeptuneLogger):
         self.logger = NeptuneLogger(run=self.run, model=model)
 
     def save_model(self, path):
-        self.run["models/model"].upload(path)
+        self.run["model"].upload(path)
 
     def stop(self):
         self.run.stop()

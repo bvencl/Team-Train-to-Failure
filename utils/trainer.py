@@ -60,9 +60,9 @@ class Trainer:
             val_loss, val_acc = validate_model(model=self.model, data_loader=self.val_loader, criterion=self.criterion)
 
             if self.neptune_logger:
-                self.neptune_namespace["train_acc"].append(train_acc)
+                self.neptune_namespace["train_acc"].append(100 * train_acc)
                 self.neptune_namespace["train_loss"].append(train_loss)
-                self.neptune_namespace["val_acc"].append(val_acc)
+                self.neptune_namespace["val_acc"].append(100 * val_acc)
                 self.neptune_namespace["val_loss"].append(val_loss)
                 self.neptune_namespace["lr"].append(self.lr_scheduler.get_last_lr()[0])
 
@@ -70,7 +70,7 @@ class Trainer:
                 self.lr_scheduler.step()
 
             if self.model_checkpoint:
-                self.checkpoint(val_loss, val_acc, self.model, self.neptune_namespace)
+                self.checkpoint(val_loss, 100 * val_acc, self.model, self.neptune_namespace)
 
             print(
                 f"Epoch {epoch + 1}/{self.n_epochs} - Train loss: {train_loss:.4f}, "
@@ -80,5 +80,5 @@ class Trainer:
 
         if self.checkpoint:
             self.model.load_state_dict(torch.load(self.config.paths.model_checkpoint_path + 'checkpoint.pth', weights_only=True)) 
-
+            
         return self.model

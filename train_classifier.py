@@ -14,7 +14,7 @@ from utils.final_validation import final_validation
 def main():
     args = get_args()
     config = read(args.config)
-    seed = config.trainer.seed  # getting the seeds from the config
+    seed = config.trainer.seed
     set_seeds(seed)
 
     visualiser = Visualiser(config=config)
@@ -36,7 +36,10 @@ def main():
 
     visualiser(y=train_data[0][0])
 
+
+    num_classes = len(train_df["label"].unique())
     print(f"Number of classes: {num_classes} | Length of train data: {len(train_data)}")
+    class_names = train_df['label'].unique().tolist()
 
     train_loader, val_loader, test_loader = DataLoaderFactory.create(
         config=config, train=train_data, val=val_data, test=test_data
@@ -65,9 +68,12 @@ def main():
     
     model = trainer.train()
     
-    final_validation(model=model, data_loader=test_loader, criterion=lossfn, num_classes=num_classes)
+    final_validation(config=config, model=model, data_loader=test_loader, criterion=lossfn, num_classes=num_classes, class_names=class_names,  neptune_logger=callbacks["neptune_logger"] if config.callbacks.neptune_logger else None)
 
     torch.save(model.state_dict(), config.paths.model_path + config.paths.model_name)
+    
+    if "neptune_logger" in callbacks and callbacks["neptune_logger"] is not None:
+        callbacks["neptune_logger"].save_model(config.paths.model_path + config.paths.model_name)
 
 if __name__ == "__main__":
     main()

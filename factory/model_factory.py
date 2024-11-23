@@ -128,7 +128,7 @@ class ModelFactory(BaseFactory):
             )
 
             my_model.conv1 = torch.nn.Conv2d(
-                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+                1, 64, kernel_size=(3, 3), stride=(1, 1), padding=(0, 0), bias=False
             )
 
             num_classes = kwargs.get("num_classes")

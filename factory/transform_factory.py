@@ -1,6 +1,5 @@
 import torchaudio.transforms as T
 import torch
-import random
 
 class TransformFactory:
     @staticmethod
@@ -35,8 +34,9 @@ class TransformFactory:
 
 class RandomAddNoise:
     """Random noise addition to mel-spectrogram."""
-    def __init__(self, config, noise_level=0.01):
-        self.noise_level = noise_level
+    def __init__(self, config):
+        self.noise_level = config.augmentation.noise_level
+        
 
     def __call__(self, spectrogram):
         noise = torch.randn_like(spectrogram) * self.noise_level
