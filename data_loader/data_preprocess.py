@@ -52,6 +52,8 @@ class AudioPreprocesser:
 
                 print("Metadata already processed. Loading existing metadata...")
                 full_meta_df = pd.read_csv(final_metadata_path)
+                if self.config.testing.testing:
+                    full_meta_df = full_meta_df[: self.config.testing.data_samples_for_testing]
                 
                 class_counts = full_meta_df['label'].value_counts()
                 print(f"Original dataset size: {len(metadata)} samples. | Processed dataset size: {len(full_meta_df)} samples.")
