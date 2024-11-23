@@ -1,7 +1,7 @@
 from utils.utils import *
 from utils.trainer import Trainer
-from factory.callback_factory import CallbackFactory
 from factory.dataloader_factory import DataLoaderFactory
+from factory.callback_factory import CallbackFactory
 from factory.agent_factory import AgentFactory
 from factory.model_factory import ModelFactory
 from factory.dataset_factory import DatasetFactory
@@ -67,6 +67,7 @@ def main():
     
     final_validation(model=model, data_loader=test_loader, criterion=lossfn, num_classes=num_classes)
 
+    torch.save(model.state_dict(), config.paths.model_path + config.paths.model_name)
 
 if __name__ == "__main__":
     main()

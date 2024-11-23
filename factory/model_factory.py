@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from torchvision.models import MobileNet_V3_Small_Weights, MobileNet_V3_Large_Weights, EfficientNet_V2_S_Weights, EfficientNet_V2_M_Weights, EfficientNet_V2_L_Weights
-from torchvision.models import mobilenet_v3_small, mobilenet_v3_large, efficientnet_v2_s, efficientnet_v2_m, efficientnet_v2_l
+from torchvision.models import MobileNet_V3_Small_Weights, MobileNet_V3_Large_Weights, EfficientNet_V2_S_Weights, EfficientNet_V2_M_Weights, EfficientNet_V2_L_Weights, ResNet50_Weights
+from torchvision.models import mobilenet_v3_small, mobilenet_v3_large, efficientnet_v2_s, efficientnet_v2_m, efficientnet_v2_l, resnet50
 
 from factory.base_factory import BaseFactory
 
@@ -17,7 +17,7 @@ class ModelFactory(BaseFactory):
                 - config: A configuration object with the following attributes:
                     - model.type (str): The type of model to create. Options are "own", 
                       "mobilenet_v3_small", "mobilenet_v3_large", "efficientnet_v2_s", 
-                      "efficientnet_v2_m", "efficientnet_v2_l".
+                      "efficientnet_v2_m", "efficientnet_v2_l", "resnet50".
                     - model.transfer_learning (bool): Whether to use pre-trained weights.
                 - num_classes (int, optional): The number of output classes for the model. 
                   Defaults to 170 for EfficientNet models.
@@ -81,7 +81,7 @@ class ModelFactory(BaseFactory):
             )
 
 
-            num_classes = kwargs.get("num_classes", 170)
+            num_classes = kwargs.get("num_classes")
             my_model.classifier[1] = nn.Linear(
                 my_model.classifier[1].in_features, num_classes
             )
@@ -99,7 +99,7 @@ class ModelFactory(BaseFactory):
             )
 
             # Modifying the classifier
-            num_classes = kwargs.get("num_classes", 170)
+            num_classes = kwargs.get("num_classes")
             my_model.classifier[1] = nn.Linear(
                 my_model.classifier[1].in_features, num_classes
             )
@@ -115,9 +115,25 @@ class ModelFactory(BaseFactory):
                 1, 24, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False
             )
 
-            num_classes = kwargs.get("num_classes", 170)
+            num_classes = kwargs.get("num_classes")
             my_model.classifier[1] = nn.Linear(
                 my_model.classifier[1].in_features, num_classes
+            )
+            
+        elif model == "resnet50":
+            my_model = resnet50(
+                weights=(
+                    ResNet50_Weights.DEFAULT if transfer_learning else None
+                )
+            )
+
+            my_model.conv1 = torch.nn.Conv2d(
+                1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+            )
+
+            num_classes = kwargs.get("num_classes")
+            my_model.fc = nn.Linear(
+                my_model.fc.in_features, num_classes
             )
             
             

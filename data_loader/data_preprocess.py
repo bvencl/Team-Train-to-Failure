@@ -21,6 +21,8 @@ class AudioPreprocesser:
         self.desired_length = int(self.sample_rate * self.desired_length_s) # Reducing audio files to the same size
         self.visualiser = visualiser
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._pad_audio = self._pad_end if self.config.data_process.pad_mode == 'end' else self._pad_center
+
 
     def process_database(self):
         """
@@ -58,7 +60,7 @@ class AudioPreprocesser:
         if metadata.empty:
             raise ValueError("The metadata DataFrame is empty. Check your input data.")
 
-        # If the test mode is enabled, it selects the test data.
+        # If the test mode is enabled, it selects a smaller sample size.
         if self.config.testing.testing:
             metadata = metadata[:self.config.testing.data_samples_for_testing]
 
@@ -77,7 +79,7 @@ class AudioPreprocesser:
         else: # Process the data in a row
             for idx, row in tqdm(metadata.iterrows(), desc="Processing audio files"):
                 if idx < 0 or idx >= len(metadata):
-                    print(f"Invalid idx: {idx}")
+                    # print(f"Invalid idx: {idx}")
                     continue
                 all_metadata.append(self._process_audio(idx, metadata))
                 
@@ -127,7 +129,7 @@ class AudioPreprocesser:
 
     def _process_audio(self, idx, dataframe):
         """
-        Create the right identical structure for sound files, like sampel rate, mono, and size.
+        Create the right identical structure for sound files, like sample rate, mono, and size.
 
         Creating melspectograms and saving them to disk.
         """
@@ -224,13 +226,44 @@ class AudioPreprocesser:
             raise ValueError(f"Invalid mode: {self.config.data_process.mode}. Not slice or single.")
 
 
-    def _pad_audio(self, y):
+    def _pad_end(self, y):
         """
-        If the audio sample is shorter than desired, it will be extended by pedding
+        If the audio sample is shorter than desired, it will be extended by padding
         """
         num_samples = y.shape[1]
         pad_length = self.desired_length - num_samples
-        return torch.nn.functional.pad(y, (0, pad_length), mode="constant", value=0)
+
+        if self.config.data_process.pad_values == 'zeros':
+            return torch.nn.functional.pad(y, (0, pad_length), mode="constant", value=0)
+
+        elif self.config.data_process.pad_values == 'repeat':
+            # Ismétléssel való padelés
+            repeat_pad = y[:, -1:].repeat(1, pad_length)
+            return torch.cat((y, repeat_pad), dim=1)
+
+        else:
+            raise ValueError(f"Invalid pad_values: {self.config.data_process.pad_values}. Not zeros or repeat.")
+
+    def _pad_center(self, y):
+        """
+        If the audio sample is shorter than desired, it will be extended by padding
+        """
+        num_samples = y.shape[1]
+        pad_length = self.desired_length - num_samples
+        left_pad = pad_length // 2
+        right_pad = pad_length - left_pad
+
+        if self.config.data_process.pad_values == 'zeros':
+            return torch.nn.functional.pad(y, (left_pad, right_pad), mode="constant", value=0)
+
+        elif self.config.data_process.pad_values == 'repeat':
+            print("Repeat padding")
+            left_repeat = y[:, :1].repeat(1, left_pad)
+            right_repeat = y[:, -1:].repeat(1, right_pad)
+            return torch.cat((left_repeat, y, right_repeat), dim=1)
+
+        else:
+            raise ValueError(f"Invalid pad_values: {self.config.data_process.pad_values}. Not 'zeros' or 'repeat'.")
 
     def _make_mel_spectrogram(self, y):
         """
