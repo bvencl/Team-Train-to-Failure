@@ -1,9 +1,10 @@
-torch==2.5.1
+torch
 torchaudio
 torchmetrics
 torchvision
 librosa
 matplotlib
+kaggle
 neptune
 neptune_pytorch
 pandas

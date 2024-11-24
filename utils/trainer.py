@@ -1,3 +1,5 @@
+import os
+
 import torch
 from utils.validate_model import validate_model
 
@@ -34,51 +36,53 @@ class Trainer:
 #! -------------------------------------------------------------------------------------------------------------------------------------
 
     def train(self):
-        for epoch in range(self.n_epochs):
-            self.model.train()
-            running_loss, correct_train = 0.0, 0
+        try:
+            for epoch in range(self.n_epochs):
+                self.model.train()
+                running_loss, correct_train = 0.0, 0
 
 
-            for i, (inputs, labels) in enumerate(self.train_loader):
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                self.optimizer.zero_grad()
-                outputs = self.model(inputs)
-                loss = self.criterion(outputs, labels)
-                loss.backward()
-                self.optimizer.step()
+                for i, (inputs, labels) in enumerate(self.train_loader):
+                    inputs, labels = inputs.to(self.device), labels.to(self.device)
+                    self.optimizer.zero_grad()
+                    outputs = self.model(inputs)
+                    loss = self.criterion(outputs, labels)
+                    loss.backward()
+                    self.optimizer.step()
 
-                running_loss += loss.item()
-                _, predicted = outputs.max(1)
-                correct_train += predicted.eq(labels).sum().item()
+                    running_loss += loss.item()
+                    _, predicted = outputs.max(1)
+                    correct_train += predicted.eq(labels).sum().item()
 
-                print(f'Train Epoch: {epoch} [{i * len(inputs)}/{len(self.train_loader.dataset)}'
-                      f'({100. * (i + 1) / len(self.train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
+                    print(f'Train Epoch: {epoch} [{i * len(inputs)}/{len(self.train_loader.dataset)}'
+                          f'({100. * (i + 1) / len(self.train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
 
-            train_loss = running_loss / len(self.train_loader)
-            train_acc = correct_train / len(self.train_loader.dataset)
+                train_loss = running_loss / len(self.train_loader)
+                train_acc = correct_train / len(self.train_loader.dataset)
 
-            val_loss, val_acc = validate_model(model=self.model, data_loader=self.val_loader, criterion=self.criterion)
+                val_loss, val_acc = validate_model(model=self.model, data_loader=self.val_loader, criterion=self.criterion)
 
-            if self.neptune_logger:
-                self.neptune_namespace["train_acc"].append(100 * train_acc)
-                self.neptune_namespace["train_loss"].append(train_loss)
-                self.neptune_namespace["val_acc"].append(100 * val_acc)
-                self.neptune_namespace["val_loss"].append(val_loss)
-                self.neptune_namespace["lr"].append(self.lr_scheduler.get_last_lr()[0])
+                if self.neptune_logger:
+                    self.neptune_namespace["train_acc"].append(100 * train_acc)
+                    self.neptune_namespace["train_loss"].append(train_loss)
+                    self.neptune_namespace["val_acc"].append(100 * val_acc)
+                    self.neptune_namespace["val_loss"].append(val_loss)
+                    self.neptune_namespace["lr"].append(self.lr_scheduler.get_last_lr()[0])
 
-            if self.lr_scheduler is not None:
-                self.lr_scheduler.step()
+                if self.lr_scheduler is not None:
+                    self.lr_scheduler.step()
 
-            if self.model_checkpoint:
-                self.checkpoint(val_loss, 100 * val_acc, self.model, self.neptune_namespace)
+                if self.model_checkpoint:
+                    self.checkpoint(val_loss, 100 * val_acc, self.model, self.neptune_namespace)
 
-            print(
-                f"Epoch {epoch + 1}/{self.n_epochs} - Train loss: {train_loss:.4f}, "
-                f"Train accuracy: {100 * train_acc:.2f}%, Val loss: {val_loss:.4f}, "
-                f"Val accuracy: {100 * val_acc:.2f}%"
-            )
-
-        if self.checkpoint:
+                print(
+                    f"Epoch {epoch + 1}/{self.n_epochs} - Train loss: {train_loss:.4f}, "
+                    f"Train accuracy: {100 * train_acc:.2f}%, Val loss: {val_loss:.4f}, "
+                    f"Val accuracy: {100 * val_acc:.2f}%"
+                )
+        except KeyboardInterrupt:
+            print("Training interrupted")
+        if self.checkpoint and os.path.exists(self.config.paths.model_checkpoint_path + 'checkpoint.pth'):
             self.model.load_state_dict(torch.load(self.config.paths.model_checkpoint_path + 'checkpoint.pth', weights_only=True)) 
             
         return self.model
