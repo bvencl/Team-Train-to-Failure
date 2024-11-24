@@ -9,4 +9,5 @@ neptune_pytorch
 pandas
 scikit_learn
 tqdm
+seaborn
 numpy

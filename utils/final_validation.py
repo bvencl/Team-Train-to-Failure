@@ -107,7 +107,7 @@ def plot_roc_curves(config, all_probs, all_targets, class_names, neptune_logger)
     tpr["macro"] = mean_tpr
     roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(20, 16))
     plt.plot(fpr["micro"], tpr["micro"], label=f'micro-average ROC curve (AUC: {roc_auc["micro"]:.2f})')
     plt.plot(fpr["macro"], tpr["macro"], label=f'macro-average ROC curve (AUC: {roc_auc["macro"]:.2f})')
     plt.plot([0, 1], [0, 1], 'k--')
