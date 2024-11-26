@@ -25,7 +25,7 @@ class AgentFactory(BaseFactory):
             optimizer = optim.SGD(model.parameters(), lr=config.agent.lr_start)
         elif optimizer_name == "adam":
             optimizer = optim.Adam(model.parameters(), lr=config.agent.lr_start)
-        elif optimizer_name == "aadamw":
+        elif optimizer_name == "adamw":
             optimizer = optim.AdamW(model.parameters(), lr=config.agent.lr_start)
         elif optimizer_name == "rmsprop":
             optimizer = optim.RMSprop(model.parameters(), lr=config.getfloat("agent", "learning_rate"))
