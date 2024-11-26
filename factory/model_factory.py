@@ -95,7 +95,7 @@ class ModelFactory(BaseFactory):
 
 
             my_model.features[0][0] = torch.nn.Conv2d(
-                1, 24, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False
+                1, 24, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False
             )
 
             # Modifying the classifier

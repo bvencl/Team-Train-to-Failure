@@ -25,10 +25,12 @@ class AgentFactory(BaseFactory):
             optimizer = optim.SGD(model.parameters(), lr=config.agent.lr_start)
         elif optimizer_name == "adam":
             optimizer = optim.Adam(model.parameters(), lr=config.agent.lr_start)
+        elif optimizer_name == "aadamw":
+            optimizer = optim.AdamW(model.parameters(), lr=config.agent.lr_start)
         elif optimizer_name == "rmsprop":
             optimizer = optim.RMSprop(model.parameters(), lr=config.getfloat("agent", "learning_rate"))
         else:
-            raise NotImplementedError("Invalid optimizer type ('sgd' or 'adam' or 'rmsprop')")
+            raise NotImplementedError("Invalid optimizer type ('sgd' or 'adam' or 'rmsprop' or 'adamw')")
 
         if config.agent.lr_decay:
             decay_strategy = config.agent.lr_decay_type
