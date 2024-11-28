@@ -40,7 +40,7 @@ def main():
     num_classes = len(train_df["label"].unique())
     print(f"Number of classes: {num_classes} | Length of train data: {len(train_data)}")
     class_names = train_df['label'].unique().tolist()
-
+if False:
     train_loader, val_loader, test_loader = DataLoaderFactory.create(
         config=config, train=train_data, val=val_data, test=test_data
     )
