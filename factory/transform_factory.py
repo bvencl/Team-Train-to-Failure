@@ -1,17 +1,17 @@
-import torchaudio.transforms as T
 import torch
+import torchaudio.transforms as T
 
 class TransformFactory:
     @staticmethod
     def create(config):
         """
-        Creates transforms for training, validation, and testing.
+        Creates transforms for training.
 
-        Args:
-            config: Configuration object.
+        ## Args:
+            **config**: Configuration object.
 
-        Returns:
-            Transform callable for training, validation, and testing.
+        ## Returns:
+            **transform**: Transform callable for training.
         """
         train_transforms = []
 

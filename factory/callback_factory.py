@@ -9,6 +9,22 @@ class CallbackFactory:
 
     @classmethod
     def create(cls, **kwargs):
+        '''
+        Create the callbacks for the training.
+        
+        # Args:
+            kwargs: dictionary containing the following:
+                - config: configuration object
+                - model: model object
+                - val_loader: validation data loader
+                - lossfn: loss function object
+                
+        # Returns:
+            my_callbacks: dictionary containing the created callbacks
+                - neptune_logger: Neptune logger callback
+                - model_checkpoint: Model checkpoint callback
+        '''
+        
         my_callbacks = {}
         config = kwargs["config"]
 

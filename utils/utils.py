@@ -1,25 +1,28 @@
 import os
 import ast
-import torch
 import random
 import argparse
-import numpy as np
-import pickle
 from types import SimpleNamespace
 from configparser import ConfigParser
 
+import torch
+import numpy as np
+
 
 def get_args():
-    """Just the usual argument parser you would use in any project"""
+    """
+    Argument parser to parese the configuration file.
+    """
     parser = argparse.ArgumentParser(description="Configuration file for training")
     parser.add_argument(
         "--config", "-c", type=str, default="config.ini", help="Configuration file"
     )
     return parser.parse_args()
 
-
 def read(path):
-    """Reading the config.ini file. Technically not relevant for this project"""
+    """
+    Reading the config.ini file.
+    """
     file_conf = ConfigParser()
 
     if not path.endswith(".ini"):
@@ -42,9 +45,10 @@ def read(path):
 
     return conf
 
-
 def set_seeds(seed):
-    """Setting seeds for (hopefully) all packages used"""
+    '''
+    Setting seeds for all packages used
+    '''
     os.environ["PYTHONHASHSEED"] = str(seed)
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     random.seed(seed)

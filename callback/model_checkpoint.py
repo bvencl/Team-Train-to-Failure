@@ -3,12 +3,11 @@ import numpy as np
 import torch
 
 class ModelCheckpoint:
-    def __init__(self, type, verbose, path, neptune_logger, loaded_values):
+    def __init__(self, type, verbose, path, loaded_values):
         self.verbose = verbose
         self.val_loss_min = np.inf if loaded_values is None else loaded_values[0]
         self.val_acc_max = 0.0 if loaded_values is None else loaded_values[1]
         self.path = path
-        self.neptune_logger = neptune_logger #! Nem felesleges? Átnézni!!!
         self.type = type
 
     def __call__(self, val_loss, val_acc, model, neptune_namespace=None):
@@ -32,6 +31,6 @@ class ModelCheckpoint:
             os.makedirs(self.path)
         torch.save(model.state_dict(), self.path + "checkpoint.pth")
 
-        if self.neptune_logger is not None:
+        if neptune_namespace is not None:
             neptune_namespace["checkpoint_loss"].append(val_loss)
             neptune_namespace["checkpoint_accuracy"].append(val_acc)

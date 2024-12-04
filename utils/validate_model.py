@@ -4,13 +4,13 @@ def validate_model(model, data_loader, criterion):
     """
     Validate the model performance on the validation set.
 
-    Args:
-        model (torch.nn.Module): The model to validate.
-        data_loader (torch.utils.data.DataLoader): DataLoader for the validation set.
-        criterion (torch.nn.Module): Loss function.
+    ## Args:
+        - model (torch.nn.Module): The model to validate.
+        - data_loader (torch.utils.data.DataLoader): DataLoader for the validation set.
+        - criterion (torch.nn.Module): Loss function.
 
-    Returns:
-        tuple: Validation loss and accuracy.
+    ## Returns:
+        - tuple: Validation loss and accuracy.
     """
     model.eval()
     running_loss, correct_val = 0.0, 0

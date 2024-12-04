@@ -6,6 +6,21 @@ from factory.base_factory import BaseFactory
 class DataLoaderFactory(BaseFactory):
     @classmethod
     def create(cls, **kwargs):
+        '''
+        Create the data loaders for the training, validation, and testing datasets.
+        
+        # Args:
+            - kwargs: dictionary containing the following:
+                - train: training dataset
+                - val: validation dataset
+                - test: testing dataset
+                - config: configuration object
+        
+        # Returns:
+            - train_loader: training data loader
+            - val_loader: validation data loader
+            - test_loader: testing data loader        
+        '''
         train_dataset, val_dataset, test_dataset = kwargs["train"], kwargs["val"], kwargs["test"]
         config = kwargs["config"]
 

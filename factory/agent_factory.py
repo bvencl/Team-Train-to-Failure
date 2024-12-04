@@ -9,6 +9,22 @@ from utils.agent_utils import FocalLoss
 class AgentFactory(BaseFactory):
     @classmethod
     def create(cls, **kwargs):
+        '''
+        Create the following objects with the given configuration:
+        - criterion: loss function
+        - optimizer: optimizer
+        - lr_scheduler: learning rate scheduler
+        
+        # Args
+            **kwargs: dictionary containing the following keys
+                - config: configuration file
+                - model: model object
+                
+        # Returns
+            criterion: loss function
+            optimizer: optimizer
+            lr_scheduler: learning rate scheduler
+        '''
         config = kwargs["config"]
         model = kwargs["model"]
         loss = config.agent.loss

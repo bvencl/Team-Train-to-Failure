@@ -4,21 +4,28 @@ import hashlib
 import torch
 import torchaudio
 import torchaudio.transforms as T
+import torchvision
+
+import librosa as lb
+import librosa.display as lid
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
-from data_loader.load_metadata import load_metadata
+from data_loader.load_metadata import load_metadata, load_testing_data
 
 
 class AudioPreprocesser:
+    """
+    Class for preprocessing the audio data.
+    """
+
     def __init__(self, config, visualiser=None):
         self.config = config
         self.sample_rate = config.data_process.sample_rate
         self.desired_length_s = config.data_process.max_length_s
-        self.desired_length = int(
-            self.sample_rate * self.desired_length_s
-        )  # Reducing audio files to the same size
+        self.desired_length = int(self.sample_rate * self.desired_length_s)
         self.visualiser = visualiser
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._pad_audio = (
@@ -26,18 +33,29 @@ class AudioPreprocesser:
             if self.config.data_process.pad_mode == "end"
             else self._pad_center
         )
-
+        self.load_data = (
+            load_metadata if not self.config.testing.testing else load_testing_data
+        )
+        self._make_mel_spectrogram = (
+            self._make_mel_spectrogram_librosa
+            if self.config.data_process.use_librosa
+            else self._make_mel_spectrogram_torch
+        )
 
     def process_database(self):
         """
-        Processes the audio database: checks existing metadata or creates new ones.
+        Processes the audio database: checks if the data is already processed, if not than processes it.
+        Calls the _process_audio method for each row in the metadata.
+        Can be parallelized for faster data processing.
         """
+
+        # making a hash of the configuration to check if there was a change in the configuration, so the data needs to be reprocessed
         config_hash = self._compute_config_hash()
         hash_file_path = os.path.join(self.config.data.output_dir, "config_hash.txt")
         final_metadata_path = os.path.join(
             self.config.data.output_dir, "final_metadata.csv"
         )
-        
+
         metadata = self._load_data()
         if metadata.empty:
             raise ValueError("The metadata DataFrame is empty. Check your input data.")
@@ -48,21 +66,38 @@ class AudioPreprocesser:
         if os.path.exists(final_metadata_path) and os.path.exists(hash_file_path):
             with open(hash_file_path, "r") as f:
                 saved_hash = f.read().strip()
+
+            # If the hash is the same, the metadata is already processed with the same configuration
             if saved_hash == config_hash:
 
                 print("Metadata already processed. Loading existing metadata...")
                 full_meta_df = pd.read_csv(final_metadata_path)
                 if self.config.testing.testing:
-                    full_meta_df = full_meta_df[: self.config.testing.data_samples_for_testing]
-                
-                class_counts = full_meta_df['label'].value_counts()
-                print(f"Original dataset size: {len(metadata)} samples. | Processed dataset size: {len(full_meta_df)} samples.")
-                print("Class representation in the data:")
-                for class_label, count in class_counts.items():
-                    print(f"Class {class_label}: {count} samples, originally {metadata['primary_label'].value_counts().get(class_label, 0)} samples.")
-                
-                return self._split_data(full_meta_df)
+                    full_meta_df = full_meta_df[
+                        : self.config.testing.data_samples_for_testing
+                    ]
+
+                # Keep only the rows with the primary_label
+                full_meta_df = full_meta_df[
+                    full_meta_df.groupby("label")["label"].transform("count")
+                    >= self.config.data.min_samples_in_class
+                ]
+
+                # Create label2idx and idx2label dictionaries for encoding the labels
+                label2idx = {
+                    label: idx
+                    for idx, label in enumerate(full_meta_df["label"].unique())
+                }
+                idx2label = {idx: label for label, idx in label2idx.items()}
+
+                # Split the data into train, validation and test sets
+                train_df, val_df, test_df = self._split_data(full_meta_df)
+
+                return train_df, val_df, test_df, label2idx, idx2label
+
+        # If the hash is different, the metadata needs to be reprocessed (Either the configuration changed or there was no existing metadata/processed data)
         else:
+            # save the hash of the current configuration
             with open(hash_file_path, "w") as f:
                 f.write(config_hash)
 
@@ -71,15 +106,17 @@ class AudioPreprocesser:
         # Subset for testing if enabled
         if self.config.testing.testing:
             metadata = metadata[: self.config.testing.data_samples_for_testing]
+            print(len(metadata))
 
         all_metadata = []
 
-        if self.config.data.multi_threading:  # Enable parallel processing
+        # Enable parallel processing
+        if self.config.data.multi_threading:
             print("Using parallel processing...")
             from joblib import Parallel, delayed
 
-            # Explicitly create a list of indices
-            metadata_indices = list(metadata.index)
+            # Explicitly create a list of indices to process
+            metadata_indices = range(len(metadata))
 
             def process_row_wrapper(idx):
                 if idx < 0 or idx >= len(metadata):
@@ -92,11 +129,15 @@ class AudioPreprocesser:
                 for idx in tqdm(metadata_indices, total=len(metadata_indices))
             )
             all_metadata.extend(results)
-        else:  # Single-threaded processing
+
+        # Single-threaded processing
+        else:
             print("Using single-threaded processing...")
             for idx in tqdm(metadata.index, desc="Processing audio files"):
                 if idx < 0 or idx >= len(metadata):
-                    print(idx)
+                    print(
+                        f"Error processing the {idx}th file! Continuing without it..."
+                    )
                     continue
                 all_metadata.append(self._process_audio(idx, metadata))
 
@@ -104,27 +145,30 @@ class AudioPreprocesser:
         full_meta_df = pd.concat(all_metadata, ignore_index=True)
         full_meta_df.to_csv(final_metadata_path, index=False)
 
-        with open(hash_file_path, "w") as f:
-            f.write(config_hash)
+        # Keep only the rows with the primary_label
+        full_meta_df = full_meta_df[
+            full_meta_df.groupby("label")["label"].transform("count")
+            >= self.config.data.min_samples_in_class
+        ]
 
-        class_counts = full_meta_df['label'].value_counts()
-
-        print("Class representation in the training data:")
-        for class_label, count in class_counts.items():
-            print(f"Class {class_label}: {count} samples, originally {metadata['primary_label'].value_counts().get(class_label, 0)} samples.")
+        # Create label2idx and idx2label dictionaries for encoding the labels
+        label2idx = {
+            label: idx for idx, label in enumerate(full_meta_df["label"].unique())
+        }
+        idx2label = {idx: label for label, idx in label2idx.items()}
 
         print(f"Metadata saved to {final_metadata_path}.")
-        return self._split_data(full_meta_df)
 
+        # Split the data into train, validation and test sets
+        train_df, val_df, test_df = self._split_data(full_meta_df)
+
+        return train_df, val_df, test_df, label2idx, idx2label
 
     def _split_data(self, full_meta_df):
         """
         Split data for train, validation and test
         """
-        
-        # Keep only the rows with the primary_label
-        full_meta_df = full_meta_df[full_meta_df.groupby("label")["label"].transform("count") >= self.config.data.min_samples_in_class]
-        
+
         train_df, val_test_df = train_test_split(
             full_meta_df,
             test_size=1 - self.config.data.train_ratio,
@@ -143,9 +187,9 @@ class AudioPreprocesser:
 
     def _load_data(self):
         """
-        Returns the existing metadata
+        Returns the existing (unprocessed) metadata
         """
-        return load_metadata(self.config)
+        return self.load_data(self.config)
 
     def _process_audio_wrapper(self, row):
         """
@@ -173,16 +217,17 @@ class AudioPreprocesser:
         meta_data_list = []
         # Generate sound files of the same size and the melspectrograms that can be created from them
         for i, y in enumerate(self._resize_audio(y)):
-
             mel_spec = self._make_mel_spectrogram(y)
 
-            if self.config.data_process.normalise:
-                mel_spec = self._normalise(mel_spec)
+            if self.config.data_process.resize_method == "function_resize":
+                resize_transform = torchvision.transforms.Resize((224, 224))
+                mel_spec = resize_transform(mel_spec)
 
-            if self.config.data_process.standardise:
-                mel_spec = self._standardise(mel_spec)
+            mel_spec = mel_spec.expand(3, -1, -1)
 
-            segment_path, segment_length = self._save_segment(
+            # !mel_spec = self._normalise_standardise(mel_spec) # Use here is depracted!
+
+            segment_path = self._save_segment(
                 mel_spec, path, idx_row, i
             )
 
@@ -227,14 +272,14 @@ class AudioPreprocesser:
         """
         Resize the audio based on the mode in the configuration.
 
-        Modes:
+        ## Modes:
         - 'slice': Slice the audio into segments of `desired_length`.
         - 'single': Keep only the beginning of the audio or pad if necessary.
 
-        Args:
+        ## Args:
             y (Tensor): The input audio waveform.
 
-        Yields:
+        ## Yields:
             Tensor: Resized audio segments.
         """
         num_samples = y.shape[1]
@@ -274,7 +319,7 @@ class AudioPreprocesser:
             return torch.nn.functional.pad(y, (0, pad_length), mode="constant", value=0)
 
         elif self.config.data_process.pad_values == "repeat":
-            # Ismétléssel való padelés
+
             repeat_pad = y[:, -1:].repeat(1, pad_length)
             return torch.cat((y, repeat_pad), dim=1)
 
@@ -308,7 +353,7 @@ class AudioPreprocesser:
                 f"Invalid pad_values: {self.config.data_process.pad_values}. Not 'zeros' or 'repeat'."
             )
 
-    def _make_mel_spectrogram(self, y):
+    def _make_mel_spectrogram_torch(self, y):
         """
         Making the mel spectrogram from the audio
         """
@@ -322,19 +367,70 @@ class AudioPreprocesser:
             f_max=self.config.data_process.f_max,
         ).to(self.device)
         to_db = T.AmplitudeToDB().to(self.device)
+
         mel_spec = mel_transform(y)
         mel_spec = to_db(mel_spec)
+
+        mel_spec = self._normalise_standardise(mel_spec)
+
         return mel_spec.to("cpu")
+
+    def _make_mel_spectrogram_librosa(self, y):
+        """
+        Making the mel spectrogram from the audio
+        """
+        y = y.numpy()
+        spec = lb.feature.melspectrogram(
+            y=y,
+            sr=self.config.data_process.sample_rate,
+            n_mels=self.config.data_process.n_mels,
+            n_fft=self.config.data_process.n_fft,
+            hop_length=self.config.data_process.hop_length,
+            fmax=self.config.data_process.f_max,
+            fmin=self.config.data_process.f_min,
+        )
+        spec = lb.power_to_db(spec, ref=1.0)
+        min_ = spec.min()
+        max_ = spec.max()
+        if max_ != min_:
+            spec = (spec - min_) / (max_ - min_)
+
+        return torch.tensor(spec).to("cpu")
+
+    def _normalise_standardise(self, y):
+        """
+        Standardise and normalise the mel spectrograms if enabled in the configuration, can be called either way.
+        """
+        if self.config.data_process.normalise:
+            y = self._normalise(y)
+
+        if self.config.data_process.standardise:
+            y = self._standardise(y)
+            
+        return y
 
     def _standardise(self, y):
         """
         Standardise the mel spectrograms
         """
-        y = y.to(self.device)
-        mean = y.mean()
-        std = y.std()
-        y = (y - mean) / (std + 1e-8)
-        return y.to("cpu")
+        if (
+            self.config.model.type == "efficientnet_v2_m"
+            or self.config.model.type == "efficientnet_v2_s"
+            or self.config.model.type == "mobilenet_v3_small"
+            or self.config.model.type == "mobilenet_v3_large"
+        ):
+            
+            mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+            std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+            y = (y - mean) / std
+            return y.to("cpu")
+        
+        else:
+            y = y.to(self.device)
+            mean = y.mean()
+            std = y.std()
+            y = (y - mean) / (std + 1e-8)
+            return y.to("cpu")
 
     def _normalise(self, y):
         """
@@ -348,7 +444,7 @@ class AudioPreprocesser:
 
     def _save_segment(self, y, path, df_row, segment_index):
         """
-        Saves the segmented sound files in numpy arrays
+        Saves the segmented spectograms in .npy files as numpy arrays
         """
         base_dir = self.config.data.output_dir
         if not os.path.exists(base_dir):
@@ -361,7 +457,7 @@ class AudioPreprocesser:
 
         np.save(save_path, y.numpy())
 
-        return save_path, y.shape[1]
+        return save_path
 
     def _compute_config_hash(self):
         """

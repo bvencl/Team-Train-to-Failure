@@ -5,6 +5,9 @@ from utils.validate_model import validate_model
 
 
 class Trainer:
+    '''
+    Class to train the model.
+    '''
     def __init__(self, config, criterion, optimizer, train_loader, val_loader, test_loader, lr_scheduler, callbacks, model):
         self.config = config
         self.criterion = criterion
@@ -33,14 +36,25 @@ class Trainer:
         if self.model_checkpoint:
             self.checkpoint = self.callbacks["model_checkpoint"]
 
-#! -------------------------------------------------------------------------------------------------------------------------------------
+
 
     def train(self):
+        '''
+        Function to train the model. Contains the training loop. Logs the metrics to Neptune.ai if enabled.
+        The best model is saved based on the validation loss or the validation accuracy, you can decide what to use in the configuratiion file.
+        At the end of the training, the best model is loaded back to the model if enabled.
+        The training can be interrupted by the user by sending a keyboard interrupt.
+        
+        ## Args:
+            - None
+            
+        ## Returns:
+            - model: trained model
+        '''  
         try:
             for epoch in range(self.n_epochs):
                 self.model.train()
                 running_loss, correct_train = 0.0, 0
-
 
                 for i, (inputs, labels) in enumerate(self.train_loader):
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -82,7 +96,7 @@ class Trainer:
                 )
         except KeyboardInterrupt:
             print("Training interrupted")
-        if self.checkpoint and os.path.exists(self.config.paths.model_checkpoint_path + 'checkpoint.pth'):
+        if self.checkpoint and os.path.exists(self.config.paths.model_checkpoint_path + 'checkpoint.pth') and self.config.trainer.load_best_at_end:
             self.model.load_state_dict(torch.load(self.config.paths.model_checkpoint_path + 'checkpoint.pth', weights_only=True)) 
             
         return self.model

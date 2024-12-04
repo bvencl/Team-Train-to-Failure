@@ -1,3 +1,5 @@
+from collections import Counter
+
 from utils.utils import *
 from utils.trainer import Trainer
 from factory.dataloader_factory import DataLoaderFactory
@@ -20,9 +22,8 @@ def main():
     visualiser = Visualiser(config=config)
 
     processer = AudioPreprocesser(config=config, visualiser=visualiser)
-    train_df, val_df, test_df = processer.process_database()
-
-    visualiser(df_row=train_df.iloc[0])
+    train_df, val_df, test_df, label2idx, idx2label = processer.process_database()
+    
 
     transforms = TransformFactory.create(config=config)
 
@@ -32,15 +33,21 @@ def main():
         train_df=train_df,
         val_df=val_df,
         test_df=test_df,
+        label2idx=label2idx,
+        idx2label=idx2label,
     )
+    for i in range(1):
+        visualiser(train_data[i+10])
+        visualiser(val_data[i+10])
+        visualiser(test_data[i+10])
 
-    visualiser(y=train_data[0][0])
-
+    print(train_data[i][0].shape)
 
     num_classes = len(train_df["label"].unique())
     print(f"Number of classes: {num_classes} | Length of train data: {len(train_data)}")
     class_names = train_df['label'].unique().tolist()
-if False:
+    
+# if False:
     train_loader, val_loader, test_loader = DataLoaderFactory.create(
         config=config, train=train_data, val=val_data, test=test_data
     )

@@ -4,7 +4,9 @@ team_readme.md
 hidden
 processed_data
 *.pth
-
+*.ipynb
+*.neptune
+*.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
