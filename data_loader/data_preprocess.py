@@ -202,7 +202,7 @@ class AudioPreprocesser:
         """
         Create the right identical structure for sound files, like sample rate, mono, and size.
 
-        Creating melspectograms and saving them to disk.
+        Creating melspectrograms and saving them to disk.
         """
         idx_row = dataframe.iloc[idx]
 
@@ -444,7 +444,7 @@ class AudioPreprocesser:
 
     def _save_segment(self, y, path, df_row, segment_index):
         """
-        Saves the segmented spectograms in .npy files as numpy arrays
+        Saves the segmented spectrograms in .npy files as numpy arrays
         """
         base_dir = self.config.data.output_dir
         if not os.path.exists(base_dir):

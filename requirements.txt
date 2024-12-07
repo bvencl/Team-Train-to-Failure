@@ -12,3 +12,4 @@ scikit_learn
 tqdm
 seaborn
 numpy
+joblib

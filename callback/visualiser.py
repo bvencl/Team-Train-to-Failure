@@ -13,7 +13,7 @@ class Visualiser:
 
     def load_audio(self, filename):
         """
-        Loads the audio file and calculates the spectogram if needed.
+        Loads the audio file and calculates the spectrogram if needed.
         """
         y, sr = lb.load(filename, sr=self.config.data_process.sample_rate)
         mel_spec = lb.feature.melspectrogram(
@@ -29,7 +29,7 @@ class Visualiser:
 
     def load_spectrogram(self, filename):
         """
-        Loads the mel spectogram.
+        Loads the mel spectrogram.
         """
         return np.load(filename), self.config.data_process.sample_rate
 
