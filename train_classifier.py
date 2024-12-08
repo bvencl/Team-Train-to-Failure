@@ -14,19 +14,24 @@ from utils.final_validation import final_validation
 
 
 def main():
+
+    # Read the configuration file and set the seeds
     args = get_args()
     config = read(args.config)
     seed = config.trainer.seed
     set_seeds(seed)
 
+    # A simple tool for optional visualization of spectrograms
     visualiser = Visualiser(config=config)
 
+    # Process the raw audio files, save them onto disk and make train, test and validation dataframes
     processer = AudioPreprocesser(config=config, visualiser=visualiser)
     train_df, val_df, test_df, label2idx, idx2label = processer.process_database()
     
 
+    # Create the optional transforms 
     transforms = TransformFactory.create(config=config)
-
+    # Make the custom datasets
     train_data, val_data, test_data, num_classes = DatasetFactory().create(
         config=config,
         transforms=transforms,
@@ -36,22 +41,18 @@ def main():
         label2idx=label2idx,
         idx2label=idx2label,
     )
-    for i in range(1):
-        visualiser(train_data[i+10])
-        visualiser(val_data[i+10])
-        visualiser(test_data[i+10])
 
-    print(train_data[i][0].shape)
-
+    # Logging
     num_classes = len(train_df["label"].unique())
     print(f"Number of classes: {num_classes} | Length of train data: {len(train_data)}")
-    class_names = train_df['label'].unique().tolist()
+    class_names = train_df['label'].unique().tolist
     
-# if False:
+    # Create the Torch Dataloaders
     train_loader, val_loader, test_loader = DataLoaderFactory.create(
         config=config, train=train_data, val=val_data, test=test_data
     )
 
+    # Create the model, optimizer, lossfunction, learning rate scheduler and callbacks
     model = ModelFactory.create(config=config, num_classes=num_classes)
     lossfn, optimizer, lr_scheduler = AgentFactory.create(config=config, model=model)
     callbacks = CallbackFactory.create(
@@ -61,6 +62,7 @@ def main():
         test_loader=test_loader,
         lossfn=lossfn,
     )
+    # Trainer class for ease of use
     trainer = Trainer(
         config=config,
         criterion=lossfn,
@@ -72,13 +74,17 @@ def main():
         callbacks=callbacks,
         model=model,
     )
-    
+
+    # Training loop
     model = trainer.train()
-    
+
+    # final validation of model
     final_validation(config=config, model=model, data_loader=test_loader, criterion=lossfn, num_classes=num_classes, class_names=class_names,  neptune_logger=callbacks["neptune_logger"] if config.callbacks.neptune_logger else None)
 
+    # save the model weights
     torch.save(model.state_dict(), config.paths.model_path + config.paths.model_name)
-    
+
+    # upload the model weights to Neptune.ai
     if "neptune_logger" in callbacks and callbacks["neptune_logger"] is not None:
         callbacks["neptune_logger"].save_model(config.paths.model_path + config.paths.model_name)
 
