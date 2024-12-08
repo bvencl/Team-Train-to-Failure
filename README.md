@@ -37,7 +37,7 @@ We employ a Convolutional Neural Network (CNN) trained on mel-spectrograms gener
 - **`dataloader/data_preprocess.py`**: Handles audio preprocessing, mel-spectrogram generation, and metadata organization into a pandas DataFrame. Processes are optimized for saving intermediate results as `.npy` files.
 - **`utils/visualise.py`**: Visualization tools for spectrograms and playback of audio recordings.
 - **`utils/utils.py`**: A utility script containing commonly used helper functions.
-- **`utils/trainer.py`**: Implements the training loop, validation, and testing routines.
+- **`callbacks/trainer.py`**: Implements the training loop, validation, and testing routines.
 - **`factory/*`**: Factory scripts for modular and organized code handling.
 - **`config.ini`**: Configuration file containing hyperparameters and other project-specific settings.
 
@@ -56,7 +56,7 @@ To download the **BirdCLEF 2024 dataset**, you can use one of the following meth
 
 The `data/unlabeled_soundscapes` directory is not used in this project and can be safely deleted to save storage space.
 
-`ffmpeg` is the required backend for the `torchaudio` library.
+`ffmpeg` is the required backend of the `torchaudio` library.
 
 The dependencies can be installed with the following commands (on Ubuntu):
 
