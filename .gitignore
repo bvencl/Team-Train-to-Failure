@@ -4,7 +4,7 @@ team_readme.md
 hidden
 processed_data
 *.pth
-*.ipynb
+# *.ipynb
 *.neptune
 *.png
 # Byte-compiled / optimized / DLL files
