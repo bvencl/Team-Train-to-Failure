@@ -7,7 +7,6 @@ import torchaudio.transforms as T
 import torchvision
 
 import librosa as lb
-import librosa.display as lid
 
 import numpy as np
 import pandas as pd

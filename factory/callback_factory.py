@@ -60,9 +60,6 @@ class CallbackFactory:
                 type=config.callbacks.model_checkpoint_type,
                 verbose=verbose,
                 path=path,
-                neptune_logger=(
-                    neptune_logger_callback if config.callbacks.neptune_logger else None
-                ),
                 loaded_values=(val_loss, val_acc) if loaded_checkpoint else None,
             )
             my_callbacks["model_checkpoint"] = checkpoint
