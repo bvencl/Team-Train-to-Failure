@@ -6,8 +6,7 @@ def hyperopt(trainer):
 
     # Define the hyperparameter search space
     config = {
-        "lr": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([2, 4, 8])
+        "lr": tune.loguniform(1e-4, 1e-1)
     }
 
     # Asynchronous Hyperband Scheduler
