@@ -1,5 +1,5 @@
 import os
-
+from ray import tune
 import torch
 from utils.validate_model import validate_model
 
@@ -35,6 +35,8 @@ class Trainer:
         self.model_checkpoint = True if self.config.callbacks.model_checkpoint else False
         if self.model_checkpoint:
             self.checkpoint = self.callbacks["model_checkpoint"]
+
+        self.hyperopt = True if self.config.callbacks.hyperopt else False
 
 
 
@@ -94,6 +96,10 @@ class Trainer:
                     f"Train accuracy: {100 * train_acc:.2f}%, Val loss: {val_loss:.4f}, "
                     f"Val accuracy: {100 * val_acc:.2f}%"
                 )
+
+                if self.hyperopt:
+                    tune.report(loss=val_loss, accuracy=val_acc)
+
         except KeyboardInterrupt:
             print("Training interrupted")
         if self.checkpoint and os.path.exists(self.config.paths.model_checkpoint_path + 'checkpoint.pth') and self.config.trainer.load_best_at_end:

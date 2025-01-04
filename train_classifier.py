@@ -11,6 +11,7 @@ from factory.transform_factory import TransformFactory
 from data_loader.data_preprocess import AudioPreprocesser
 from callback.visualiser import Visualiser
 from utils.final_validation import final_validation
+from utils.hyperopt import hyperopt
 
 
 def main():
@@ -75,8 +76,12 @@ def main():
         model=model,
     )
 
-    # Training loop
-    model = trainer.train()
+    if config.callbacks.hyperopt:
+        # Hyperparameter optimization
+        model = hyperopt(trainer=trainer)
+    else:
+        # Training loop
+        model = trainer.train()
 
     # final validation of model
     final_validation(config=config, model=model, data_loader=test_loader, criterion=lossfn, num_classes=num_classes, class_names=class_names,  neptune_logger=callbacks["neptune_logger"] if config.callbacks.neptune_logger else None)
