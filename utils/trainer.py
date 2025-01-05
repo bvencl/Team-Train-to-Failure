@@ -1,5 +1,6 @@
 import os
-from ray import tune
+
+from ray import train
 import torch
 from utils.validate_model import validate_model
 
@@ -98,7 +99,7 @@ class Trainer:
                 )
 
                 if self.hyperopt:
-                    tune.report(loss=val_loss, accuracy=val_acc)
+                    train.report({"accuracy": val_acc})
 
         except KeyboardInterrupt:
             print("Training interrupted")

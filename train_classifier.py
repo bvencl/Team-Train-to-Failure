@@ -11,7 +11,7 @@ from factory.transform_factory import TransformFactory
 from data_loader.data_preprocess import AudioPreprocesser
 from callback.visualiser import Visualiser
 from utils.final_validation import final_validation
-from utils.hyperopt import hyperopt_or_train
+from utils.hyperopt import Hyperopt
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
         config=config, train=train_data, val=val_data, test=test_data
     )
 
-    hyperopt_or_train(
+    hyperopt = Hyperopt(
         config=config,
         train_loader=train_loader,
         val_loader=val_loader,
@@ -61,6 +61,8 @@ def main():
         class_names=class_names,
         num_classes=num_classes,
     )
+    
+    hyperopt.hyperopt_or_train()
 
 if __name__ == "__main__":
     main()

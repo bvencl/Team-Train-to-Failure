@@ -33,7 +33,7 @@ class AudioPreprocesser:
             else self._pad_center
         )
         self.load_data = (
-            load_metadata if not self.config.testing.testing else load_testing_data
+            load_metadata # if not self.config.testing.testing else load_testing_data
         )
         self._make_mel_spectrogram = (
             self._make_mel_spectrogram_librosa

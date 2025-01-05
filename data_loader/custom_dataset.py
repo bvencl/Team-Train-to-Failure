@@ -1,3 +1,5 @@
+import os
+
 import torch
 import numpy as np
 
@@ -13,6 +15,7 @@ class BirdClefDataset(torch.utils.data.Dataset):
         """
         self.metadata_df = metadata_df
         self.transform = transform
+        self.cwd = os.getcwd()
 
         self.label2idx = label2idx
         self.idx2label = idx2label
@@ -45,7 +48,7 @@ class BirdClefDataset(torch.utils.data.Dataset):
             Transformed spectrogram.
         """
         # Load the spectrogram file
-        spectrogram = np.load(file_path)
+        spectrogram = np.load(os.path.join(self.cwd, file_path))
         spectrogram = torch.tensor(spectrogram, dtype=torch.float32)
 
         # Apply transform if available
