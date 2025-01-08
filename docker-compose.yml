@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  birdclef_app:
+    build: .
+    container_name: birdclef_app
+    tty: true
+    stdin_open: true
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - QT_X11_NO_MITSHM=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "2222:22"
+    volumes:
+      - ./data:/chipchirip/data
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.docker/config.json:/config.json
+    command: --interval 30 --cleanup --label-enable
+    restart: always
