@@ -1,8 +1,7 @@
-version: '3.8'
 services:
   birdclef_app:
     build: .
-    container_name: birdclef_app
+    container_name: birdclef
     tty: true
     stdin_open: true
     environment:
@@ -17,8 +16,6 @@ services:
               capabilities: [gpu]
     ports:
       - "2222:22"
-    volumes:
-      - ./data:/chipchirip/data
 
   watchtower:
     image: containrrr/watchtower
