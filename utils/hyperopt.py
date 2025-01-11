@@ -10,39 +10,53 @@ from utils.final_validation import final_validation
 
 class Hyperopt:
     def __init__(self, config, train_loader, val_loader, test_loader, class_names, num_classes):
+        """
+        Initializes the Hyperopt class with configuration, data loaders, and class information.
+
+        Args:
+            config: Configuration object containing hyperparameter search and training settings.
+            train_loader: DataLoader for the training dataset.
+            val_loader: DataLoader for the validation dataset.
+            test_loader: DataLoader for the test dataset.
+            class_names: List of class names.
+            num_classes: Number of classes in the dataset.
+        """
         self.config = config
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
         self.class_names = class_names
         self.num_classes = num_classes
-        self.hyperopt_on = config.callbacks.hyperopt
-        
+        self.hyperopt_on = config.callbacks.hyperopt  # Flag indicating whether to perform hyperparameter optimization.
+
     def hyperopt_or_train(self):
+        """
+        Decides whether to perform hyperparameter optimization or directly train the model.
+        """
+        # Create the model using the specified configuration.
         model = ModelFactory.create(config=self.config, num_classes=self.num_classes)
-        if self.config.callbacks.hyperopt:
-            # Define the hyperparameter search space
+        
+        if self.config.callbacks.hyperopt:  # Perform hyperparameter optimization if enabled.
+            # Define the hyperparameter search space.
             hyperopt_config = {
                 "lr_decay_type": tune.choice(["lin", "exp", "cos", "warmup_cos"]),
-                "lr_start": tune.loguniform(1e-7, 1e-3),
-                "lr_warmup_end": tune.loguniform(1e-7, 1e-3),
-                "lr_end": tune.loguniform(1e-7, 1e-3),
-                "warmup_epochs": tune.choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-                "exp_gamma": tune.uniform(0.9, 0.999),
+                "lr_start": tune.loguniform(1e-6, 1e-2),
+                "lr_warmup_end": tune.loguniform(1e-4, 1e-2),
+                "lr_end": tune.loguniform(1e-8, 1e-4),
+                "warmup_epochs": tune.choice([1, 3, 5, 7, 10, 15, 20]),
+                "exp_gamma": tune.uniform(0.85, 0.995),
                 "loss": tune.choice(["cross_entropy", "focal_loss"]),
-                "optimizer": tune.choice(["sgd", "adam","rmsprop", "adamw"]),
+                "optimizer": tune.choice(["sgd", "adam", "adamw", "rmsprop"]),
             }
 
-            # Asynchronous Hyperband Scheduler
+            # Configure the ASHA scheduler for efficient hyperparameter optimization.
             hyperopt_scheduler = ASHAScheduler(
-                # metric="accuracy",
-                # mode="max",
-                max_t=10,
-                grace_period=1,
-                reduction_factor=2
+                max_t=10,  # Maximum training epochs per trial.
+                grace_period=1,  # Minimum epochs before early stopping.
+                reduction_factor=2  # Factor by which trials are reduced.
             )
 
-            # Begin hyperparameter search
+            # Run the hyperparameter search.
             analysis = tune.run(
                 tune.with_parameters(
                     self.train_model,
@@ -53,30 +67,42 @@ class Hyperopt:
                     class_names=self.class_names,
                     num_classes=self.num_classes,
                 ),
-                resources_per_trial={"cpu": 6, "gpu": 0.95},
-                config=hyperopt_config,
-                scheduler=hyperopt_scheduler,
-                num_samples=100,  # Number of hyperparameter combinations to try
-                metric="accuracy",
-                mode="max"
+                resources_per_trial={"cpu": 6, "gpu": 0.95},  # Resource allocation for each trial.
+                config=hyperopt_config,  # Hyperparameter search space.
+                scheduler=hyperopt_scheduler,  # Scheduler to manage trial execution.
+                num_samples=100,  # Number of trials to run.
+                metric="accuracy",  # Evaluation metric to optimize.
+                mode="max"  # Optimize for maximum accuracy.
             )
 
+            # Output the best hyperparameters found.
             print("Best hyperparameters found were: ", analysis.best_config)
-            
-            df = analysis.results_df
 
-            # Eredmények írása CSV-be
+            # Save results to a CSV file for further analysis.
+            df = analysis.results_df
             df.to_csv("tune_results.csv", index=False)
-            print("Eredmények mentve a tune_results.csv fájlba!")
-            
-        else:
+            print("Results saved to tune_results.csv!")
+        
+        else:  # Train the model directly if hyperparameter optimization is disabled.
             self.train_model(self.config, model, self.train_loader, self.val_loader, self.test_loader, self.class_names, self.num_classes)
 
-
-
     def train_model(self, config, model=None, train_loader=None, val_loader=None, test_loader=None, class_names=None, num_classes=None):
-        # Create the model, optimizer, lossfunction, learning rate scheduler and callbacks
+        """
+        Trains the model using the specified configuration and data loaders.
+
+        Args:
+            config: Configuration object.
+            model: PyTorch model to train.
+            train_loader: DataLoader for training data.
+            val_loader: DataLoader for validation data.
+            test_loader: DataLoader for test data.
+            class_names: List of class names.
+            num_classes: Number of classes in the dataset.
+        """
+        # Create the loss function, optimizer, and learning rate scheduler.
         lossfn, optimizer, lr_scheduler = AgentFactory.create(original_config=self.config, hyperopt_on=self.hyperopt_on, config=config, model=model)
+        
+        # Create callbacks for logging and checkpointing.
         callbacks = CallbackFactory.create(
             config=self.config,
             model=model,
@@ -84,7 +110,8 @@ class Hyperopt:
             test_loader=test_loader,
             lossfn=lossfn,
         )
-        # Trainer class for ease of use
+
+        # Initialize the trainer with the specified parameters.
         trainer = Trainer(
             config=self.config,
             criterion=lossfn,
@@ -97,16 +124,10 @@ class Hyperopt:
             model=model,
         )
 
-        # Kiírja a jelenleg használt konfigurációt
-        # print("\n=== Jelenlegi paraméterek ===")
-        # for key, value in config.items():
-        #     print(f"{key}: {value}")
-        # print("=============================\n")
-
-        # Training loop
+        # Train the model.
         model = trainer.train()
 
-        # final validation of model
+        # Perform final validation on the test dataset.
         final_validation(
             config=config,
             model=model,
@@ -117,9 +138,9 @@ class Hyperopt:
             neptune_logger=callbacks["neptune_logger"] if config.callbacks.neptune_logger else None
         )
 
-        # save the model weights
+        # Save the trained model to disk.
         torch.save(model.state_dict(), config.paths.model_path + config.paths.model_name)
 
-        # upload the model weights to Neptune.ai
+        # Optionally upload the trained model to Neptune.ai if logging is enabled.
         if "neptune_logger" in callbacks and callbacks["neptune_logger"] is not None:
             callbacks["neptune_logger"].save_model(config.paths.model_path + config.paths.model_name)

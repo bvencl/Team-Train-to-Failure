@@ -1,6 +1,8 @@
 services:
   birdclef_app:
+    # image: bodivencel/birdclef_img:latest
     build: .
+    platform: linux/amd64
     container_name: birdclef
     tty: true
     stdin_open: true
