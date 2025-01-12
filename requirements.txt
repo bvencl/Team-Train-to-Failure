@@ -13,3 +13,4 @@ tqdm
 seaborn
 numpy
 joblib
+ray[tune]

@@ -11,6 +11,7 @@ from factory.transform_factory import TransformFactory
 from data_loader.data_preprocess import AudioPreprocesser
 from callback.visualiser import Visualiser
 from utils.final_validation import final_validation
+from utils.hyperopt import Hyperopt
 
 
 def main():
@@ -52,41 +53,16 @@ def main():
         config=config, train=train_data, val=val_data, test=test_data
     )
 
-    # Create the model, optimizer, lossfunction, learning rate scheduler and callbacks
-    model = ModelFactory.create(config=config, num_classes=num_classes)
-    lossfn, optimizer, lr_scheduler = AgentFactory.create(config=config, model=model)
-    callbacks = CallbackFactory.create(
+    hyperopt = Hyperopt(
         config=config,
-        model=model,
-        val_loader=val_loader,
-        test_loader=test_loader,
-        lossfn=lossfn,
-    )
-    # Trainer class for ease of use
-    trainer = Trainer(
-        config=config,
-        criterion=lossfn,
-        optimizer=optimizer,
         train_loader=train_loader,
         val_loader=val_loader,
         test_loader=test_loader,
-        lr_scheduler=lr_scheduler,
-        callbacks=callbacks,
-        model=model,
+        class_names=class_names,
+        num_classes=num_classes,
     )
-
-    # Training loop
-    model = trainer.train()
-
-    # final validation of model
-    final_validation(config=config, model=model, data_loader=val_loader if test_loader is None else test_loader, criterion=lossfn, num_classes=num_classes, class_names=class_names,  neptune_logger=callbacks["neptune_logger"] if config.callbacks.neptune_logger else None)
-
-    # save the model weights
-    torch.save(model.state_dict(), config.paths.model_path + config.paths.model_name)
-
-    # upload the model weights to Neptune.ai
-    if "neptune_logger" in callbacks and callbacks["neptune_logger"] is not None:
-        callbacks["neptune_logger"].save_model(config.paths.model_path + config.paths.model_name)
+    
+    hyperopt.hyperopt_or_train()
 
 if __name__ == "__main__":
     main()

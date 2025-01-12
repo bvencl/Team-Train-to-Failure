@@ -7,6 +7,10 @@ processed_data
 # *.ipynb
 *.neptune
 *.png
+
+data/birdclef-2024.zip
+data/test_soundscapes
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Python",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${cwd}/train_classifier.py",
+        "console": "integratedTerminal",
+        "justMyCode": false,  // "justMyCode" kikapcsolása
+        "args": [],           // Opcionálisan átadható argumentumok a scriptnek
+        "env": {},              // Opcionális környezeti változók        
+        "cwd": "${workspaceFolder}" // Aktuális munkakönyvtár
+      }
+    ]
+  }
+  

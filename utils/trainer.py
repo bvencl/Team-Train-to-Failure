@@ -1,5 +1,6 @@
 import os
 
+from ray import train
 import torch
 from utils.validate_model import validate_model
 
@@ -36,6 +37,8 @@ class Trainer:
         if self.model_checkpoint:
             self.checkpoint = self.callbacks["model_checkpoint"]
 
+        self.hyperopt = True if self.config.callbacks.hyperopt else False
+
 
 
     def train(self):
@@ -67,8 +70,9 @@ class Trainer:
                     running_loss += loss.item()
                     _, predicted = outputs.max(1)
                     correct_train += predicted.eq(labels).sum().item()
-
-                    print(f'Train Epoch: {epoch} [{i * len(inputs)}/{len(self.train_loader.dataset)}'
+                    
+                    if not self.callbacks.hyperopt:
+                        print(f'Train Epoch: {epoch} [{i * len(inputs)}/{len(self.train_loader.dataset)}'
                           f'({100. * (i + 1) / len(self.train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
 
                 train_loss = running_loss / len(self.train_loader)
@@ -94,6 +98,10 @@ class Trainer:
                     f"Train accuracy: {100 * train_acc:.2f}%, Val loss: {val_loss:.4f}, "
                     f"Val accuracy: {100 * val_acc:.2f}%"
                 )
+
+                if self.hyperopt:
+                    train.report({"accuracy": val_acc})
+
         except KeyboardInterrupt:
             print("Training interrupted")
         if self.checkpoint and os.path.exists(self.config.paths.model_checkpoint_path + 'checkpoint.pth') and self.config.trainer.load_best_at_end:
