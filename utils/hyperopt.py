@@ -27,7 +27,7 @@ class Hyperopt:
         self.test_loader = test_loader
         self.class_names = class_names
         self.num_classes = num_classes
-        self.hyperopt_on = config.callbacks.hyperopt  # Flag indicating whether to perform hyperparameter optimization.
+        self.hyperopt_on = config.callbacks.hyperopt
 
     def hyperopt_or_train(self):
         """
@@ -67,7 +67,7 @@ class Hyperopt:
                     class_names=self.class_names,
                     num_classes=self.num_classes,
                 ),
-                resources_per_trial={"cpu": 6, "gpu": 0.95},  # Resource allocation for each trial.
+                resources_per_trial={"cpu": 4, "gpu": 0.5},  # Resource allocation for each trial.
                 config=hyperopt_config,  # Hyperparameter search space.
                 scheduler=hyperopt_scheduler,  # Scheduler to manage trial execution.
                 num_samples=100,  # Number of trials to run.
@@ -131,7 +131,7 @@ class Hyperopt:
         final_validation(
             config=config,
             model=model,
-            data_loader=test_loader,
+            data_loader=test_loader if test_loader is not None else val_loader,
             criterion=lossfn,
             num_classes=num_classes,
             class_names=class_names,

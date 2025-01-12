@@ -70,8 +70,9 @@ class Trainer:
                     running_loss += loss.item()
                     _, predicted = outputs.max(1)
                     correct_train += predicted.eq(labels).sum().item()
-
-                    print(f'Train Epoch: {epoch} [{i * len(inputs)}/{len(self.train_loader.dataset)}'
+                    
+                    if not self.callbacks.hyperopt:
+                        print(f'Train Epoch: {epoch} [{i * len(inputs)}/{len(self.train_loader.dataset)}'
                           f'({100. * (i + 1) / len(self.train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
 
                 train_loss = running_loss / len(self.train_loader)
