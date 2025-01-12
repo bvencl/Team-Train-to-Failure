@@ -1,6 +1,10 @@
+# ssh -p 2222 root@localhost
+# password: root
+
 services:
   birdclef_app:
-    # image: bodivencel/birdclef_img:latest # ! Can be used once the image is done and is published on Docker Hub (I hope it is available once we submitted our work)
+    image: bodivencel/birdclef_img:latest # ! Can be used once the image is done and is published on Docker Hub (We hope it is available once we submitted our work)
+    # If the image above doesn't work just comment it, download the dataset and build the image.
     build:
       context: .
       dockerfile: Dockerfile
