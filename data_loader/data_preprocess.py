@@ -154,13 +154,14 @@ class AudioPreprocesser:
         label2idx = {
             label: idx for idx, label in enumerate(full_meta_df["label"].unique())
         }
+        
         idx2label = {idx: label for label, idx in label2idx.items()}
 
         print(f"Metadata saved to {final_metadata_path}.")
 
         # Split the data into train, validation and test sets
         train_df, val_df, test_df = self._split_data(full_meta_df)
-
+        
         return train_df, val_df, test_df, label2idx, idx2label
 
     def _split_data(self, full_meta_df):
@@ -175,6 +176,11 @@ class AudioPreprocesser:
             random_state=self.config.trainer.seed,
         )
 
+        if self.config.data.test_val_ratio == 0:
+            val_df = val_test_df
+            test_df = None
+            return train_df, val_df, test_df
+        
         val_df, test_df = train_test_split(
             val_test_df,
             test_size=self.config.data.test_val_ratio,

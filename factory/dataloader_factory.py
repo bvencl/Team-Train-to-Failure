@@ -46,6 +46,10 @@ class DataLoaderFactory(BaseFactory):
         )
         print(f'Number of validation batches: {len(val_loader)}')
 
+        if test_dataset is None:
+            print(f'Number of test batches: 0')
+            return train_loader, val_loader, None
+        
         test_loader = DataLoader(
             dataset=test_dataset,
             batch_size=config.trainer.batch_size_test,

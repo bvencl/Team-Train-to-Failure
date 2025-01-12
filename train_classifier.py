@@ -79,7 +79,7 @@ def main():
     model = trainer.train()
 
     # final validation of model
-    final_validation(config=config, model=model, data_loader=test_loader, criterion=lossfn, num_classes=num_classes, class_names=class_names,  neptune_logger=callbacks["neptune_logger"] if config.callbacks.neptune_logger else None)
+    final_validation(config=config, model=model, data_loader=val_loader if test_loader is None else test_loader, criterion=lossfn, num_classes=num_classes, class_names=class_names,  neptune_logger=callbacks["neptune_logger"] if config.callbacks.neptune_logger else None)
 
     # save the model weights
     torch.save(model.state_dict(), config.paths.model_path + config.paths.model_name)

@@ -43,12 +43,15 @@ class DatasetFactory(BaseFactory):
             label2idx=label2idx,
             idx2label=idx2label,
         )
-        test_dataset = BirdClefDataset(
-            metadata_df=test_df,
-            config=config,
-            label2idx=label2idx,
-            idx2label=idx2label,
-        )
+        if test_df is not None:
+            test_dataset = BirdClefDataset(
+                metadata_df=test_df,
+                config=config,
+                label2idx=label2idx,
+                idx2label=idx2label,
+            )
+        else:
+            test_dataset = None
 
         # Number of classes
         num_classes = len(train_df["label"].unique())

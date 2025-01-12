@@ -40,6 +40,7 @@ class CustomNeptuneLogger(NeptuneLogger):
                 add_param("exp_gamma", self._config.agent.exp_gamma)
             if self._config.agent.lr_decay_type == "warmupcosine":
                 add_param("lr_warmup_end", self._config.agent.lr_warmup_end) 
+                add_param("lr_warmup_epochs", self._config.agent.warmup_epochs)
 
         # Model-related parameters
         add_param("model_type", self._config.model.type)
@@ -59,12 +60,18 @@ class CustomNeptuneLogger(NeptuneLogger):
         add_param("max_length_s", self._config.data_process.max_length_s)
         add_param("f_max", self._config.data_process.f_max)
         add_param("f_min", self._config.data_process.f_min)
+        add_param("use_librosa", self._config.data_process.use_librosa)
         add_param("mode", self._config.data_process.mode)
+        add_param("normalize", self._config.data_process.normalise)
+        add_param("standardize", self._config.data_process.standardise)
+        add_param("pad_mode", self._config.data_process.pad_mode)
+        add_param("pad_values", self._config.data_process.pad_values)
 
         # Augmentation parameters
         add_param("data_augmentation", self._config.augmentation.data_augmentation)
         add_param("augment_add_noise", self._config.augmentation.augment_add_noise)
         add_param("augment_spec_augment", self._config.augmentation.augment_spec_augment)
+        add_param("nosise_level", self._config.augmentation.nosise_level)
 
         # Callback parameters
         add_param("neptune_logger", self._config.callbacks.neptune_logger)
