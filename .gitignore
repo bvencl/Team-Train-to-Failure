@@ -6,7 +6,7 @@ processed_data
 *.pth
 # *.ipynb
 *.neptune
-*.png
+# *.png
 
 data/birdclef-2024.zip
 data/test_soundscapes
